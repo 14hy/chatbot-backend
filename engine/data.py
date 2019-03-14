@@ -1,5 +1,7 @@
 import collections
 import unicodedata
+import khaiii
+from khaiii import KhaiiiApi
 
 
 def _is_control(char):
@@ -320,6 +322,28 @@ class PreProcessor(object):
 
         self.tokenizer = FullTokenizer(params['vocab_file'])
         self.vocab = load_vocab_as_list(params['vocab_file'])
+        self.khaiii_api = KhaiiiApi()
+
+    def str_to_morphs(self, text):
+        '''
+        한글 형태소 분석기 khaiii
+        :param text:
+        :return: list of morphs tokens
+
+        ** KhaiiiWord 객체 **
+        lex : 원본의 토큰
+        begin : 원본에서 토큰의 시작 위치
+        morphs : 형태소/품사
+        __str__ : lex+\t+morph+'+'+...
+        '''
+        output = []
+        for word in self.khaiii_api.analyze(text):
+            morphs = word.morphs
+            for morph in morphs:
+                morph = morph.split('/')[0]
+                output.append(morph)
+
+        return output
 
     def str_to_tokens(self, text):
         '''
