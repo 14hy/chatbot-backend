@@ -295,7 +295,7 @@ class FullTokenizer(object):
                 self.vocab[line] = idx
                 idx += 1
 
-    def _tokenize_to_doc_tokens(self, context):
+    def tokenize_to_doc_tokens(self, context):
         def _tokenize_str(text):
             '''
             text 를 받아, 전처리 한 후, 토큰들로 바꿈

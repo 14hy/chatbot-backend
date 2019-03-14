@@ -1,3 +1,4 @@
+import config
 from engine.tokenization import FullTokenizer
 
 
@@ -32,7 +33,6 @@ class InputFeatures(object):
                  input_ids,
                  input_mask=None,
                  segment_ids=None):
-        self.input_ids = input_ids
         self.input_mask = input_mask
         self.segment_ids = segment_ids
         self.unique_id = unique_id
@@ -41,15 +41,16 @@ class InputFeatures(object):
         print('input_ids:', self.input_ids)
         print('input_mask:', self.input_mask)
         print('segment_ids:', self.segment_ids)
-        print('unique_id:', self.unique_id)
 
 
 class PreProcessor(object):
 
-    def __init__(self, params):
+    def __init__(self):
 
-        self.tokenizer = FullTokenizer(params['vocab_file'])
-        self.vocab = load_vocab_as_list(params['vocab_file'])
+        self.DEFAULT_CONFIG = config.DEFAULT_CONFIG
+
+        self.tokenizer = FullTokenizer(self.DEFAULT_CONFIG['vocab_file'])
+        self.vocab = load_vocab_as_list(self.DEFAULT_CONFIG['vocab_file'])
 
 
     def str_to_tokens(self, text):
@@ -71,31 +72,35 @@ class PreProcessor(object):
             output.append(self.vocab.index(token))
         return output
 
-    def create_feature(self, question, context, params):
+    def create_InputFeature(self, query_text, params, context=None):
+        '''
 
-        unique_id = params['unique_id']
-        max_query_length = params['max_query_length']
-        max_seq_length = params['max_seq_length']
+        :param query_text:
+        :param context:
+        :param params:
+        :return:
 
-        question_text = question
+        context is not None:
+        input_ids: [CLS] query_text [SEP] context [SEP] [PAD] ...
+        segment_ids: [0] [0] [0] [0] [0] [1] [1] [1] [1] [0] ...
+        input_mask:  [1] [1] [1] [1] [1] [1] [1] [1] [1] [0] ...
+        context is None:
+        input_ids: [CLS] query_text [SEP] [PAD] ...
+        segment_ids: [0] [0] [0] [0] [0] [0] [0] ...
+        input_mask:  [1] [1] [1] [1] [1] [1] [0] ...
+        '''
 
+        max_query_length = self.DEFAULT_CONFIG['max_query_length']
+        max_seq_length = self.DEFAULT_CONFIG['max_seq_length']
 
-        doc_tokens = self.tokenizer._tokenize_to_doc_tokens(context)
 
         token_to_original_index = []
         original_to_token_index = []
         all_doc_tokens = []
 
-        query_tokens = self.str_to_tokens(question_text)
+        query_tokens = self.str_to_tokens(query_text)
         if len(query_tokens) > max_query_length:
             query_tokens = query_tokens[0:max_query_length]
-
-        for i, token in enumerate(doc_tokens):
-            original_to_token_index.append(i)
-            sub_tokens = self.str_to_tokens(token)
-            for sub_token in sub_tokens:
-                token_to_original_index.append(i)
-                all_doc_tokens.append(sub_token)
 
         input_ids = []
         input_mask = []
@@ -109,17 +114,26 @@ class PreProcessor(object):
         input_ids.append('[SEP]')
         segment_ids.append(0)
 
-        # context
-        for doc in all_doc_tokens:
-            input_ids.append(doc)
-            segment_ids.append(1)
-        input_ids.append('[SEP]')
-        segment_ids.append(1)
+        if context is not None:
+            doc_tokens = self.tokenizer.tokenize_to_doc_tokens(context)
 
-        if len(input_ids) > max_seq_length:
-            input_ids = input_ids[0:max_seq_length]
-            input_ids[-1] = ['SEP']
-            segment_ids = segment_ids[0:max_seq_length]
+            for i, token in enumerate(doc_tokens):
+                original_to_token_index.append(i)
+                sub_tokens = self.str_to_tokens(token)
+                for sub_token in sub_tokens:
+                    token_to_original_index.append(i)
+                    all_doc_tokens.append(sub_token)
+
+            for doc in all_doc_tokens:
+                input_ids.append(doc)
+                segment_ids.append(1)
+            input_ids.append('[SEP]')
+            segment_ids.append(1)
+
+            if len(input_ids) > max_seq_length:
+                input_ids = input_ids[0:max_seq_length]
+                input_ids[-1] = ['SEP']
+                segment_ids = segment_ids[0:max_seq_length]
 
         _length = len(input_ids)
 
@@ -137,8 +151,7 @@ class PreProcessor(object):
 
         # input_ids = self.tokens_to_idx(input_ids)
 
-        feature = InputFeatures(unique_id,
-                                input_ids,
+        feature = InputFeatures(input_ids,
                                 input_mask=input_mask,
                                 segment_ids=segment_ids)
 

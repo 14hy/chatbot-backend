@@ -88,7 +88,7 @@ class BertConfig(object):
     def read_from_json_file(self, json_file):
         with open(json_file, mode='r') as file:
             config = json.load(file)
-            print('---bert config loaded from json---')
+            print('---bert conf loaded from json---')
         self.vocab_size = config['vocab_size']
         self.hidden_size = config['hidden_size']
         self.num_hidden_layers = config['num_hidden_layers']

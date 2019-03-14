@@ -1,5 +1,5 @@
 """
-WSGI config for chatbot project.
+WSGI conf for chatbot project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

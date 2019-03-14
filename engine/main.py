@@ -1,14 +1,13 @@
-from engine.data import PreProcessor
+from engine.data.preprocess import PreProcessor
 from engine.model import Model
-import argparse
+
+
 # TODO argument
 
 class Engine(object):
 
     def __init__(self):
 
-        self.question = None
-        self.answer = None
         self.context = None
         self.example = None
         self.params = None
@@ -19,10 +18,10 @@ class Engine(object):
 
         self.test_mode()
         self.model.build_model(self.params)
-        self.preprocessor = PreProcessor(self.params)
-        input_feature = self.preprocessor.create_feature(self.question,
-                                                         self.context,
-                                                         self.params)
+        self.preprocessor = PreProcessor()
+        input_feature = self.preprocessor.create_InputFeature(self.question,
+                                                              self.context,
+                                                              self.params)
         start, end = self.model.predict(input_feature)  # warm up.
 
         self.answer = self.preprocessor.pred_to_text(start, end, input_feature)
@@ -55,14 +54,8 @@ class Engine(object):
                        '학생회관 건물 계단을 내려오는 임종석을 발견, 검거해 구속을 집행했다. 임종석은 청량리경찰서에서 ' \
                        '약 1시간 동안 조사를 받은 뒤 오전 9시 50분 경 서울 장안동의 서울지방경찰청 공안분실로 인계되었다.'
 
-    def get_answer(self):
-        return self.answer
-
     def get_context(self):
         return self.context
-
-    def set_question(self, question):
-        self.question = question
 
     def _set_context(self, context):
         self.context = context
@@ -72,23 +65,34 @@ class Engine(object):
             raise Exception("question is None")
         pass
 
-    def question_to_answer(self, question):
-        print('*** question :', question, ' ***')
-        self.set_question(question)
-        input_feature = self.preprocessor.create_feature(self.question,
-                                                         self.context,
-                                                         self.params)
-        input_feature.show()
-        start, end = self.model.predict(input_feature)  # warm up.
-        self.answer = self.preprocessor.pred_to_text(start, end, input_feature)
-        print('생성된 답변 : ', self.answer)
-        return self.get_answer()
+    def chat_to_answer(self, question):
+        '''
+        프론트로부터 질문을 받아 적절한 답변을 보냄
+        :param question: str
+        :return: str
+        '''
 
-    def text_to_feature_vectors(self, text):
-        input_feature = self.preprocessor.create_feature(self.question,
-                                                         self.context,
-                                                         self.params)
+        # TODO Query Feature extractor.
+
+        # TODO query preprocess
+
+
+        # TODO query classification
+
+        # TODO 적절한 모델로 보낸 후 답변 생성
+
+        print('*** question ***\n', question)
+        self._text_to_feature_vectors(question)
+        answer = self.preprocessor.pred_to_text(start, end, input_feature)
+        print('*** 생성된 답변 ***\n', answer)
+
+        return answer
+
+    def _text_to_feature_vectors(self, text):
+        input_feature = self.preprocessor.create_InputFeature(text,
+                                                              self.context,
+                                                              self.params)
         input_feature.show()
         feature_vectors = self.model.extract_feature_vectors(input_feature, -2)
-        print('생성된 feature vector', feature_vectors)
+        print('*** 생성된 feature vector ***\n', feature_vectors)
         return feature_vectors

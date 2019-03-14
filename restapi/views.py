@@ -21,11 +21,10 @@ def test_REST(request):
     """
     if request.method == 'GET':
         # restapi = Member.objects.all()
-        question = request.GET['question']
-        question = ast.literal_eval(question)
-        print(question)
+        chat = request.GET['chat']
+        chat = ast.literal_eval(chat)
         # serializer = MemberSerializer(restapi, many=True)
-        return JsonResponse(engine.question_to_answer(question[0]),
+        return JsonResponse(engine.chat_to_answer(chat[0]),
                             safe=False)
     #
     # elif request.method == 'POST':
