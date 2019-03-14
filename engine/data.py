@@ -1,6 +1,6 @@
 import collections
 import unicodedata
-import khaiii
+
 from khaiii import KhaiiiApi
 
 
@@ -153,7 +153,6 @@ class WordpieceTokenizer(object):
 
         output_tokens = []
         for token in whitespace_tokenize(text):
-            token = unicodedata.normalize('NFC', token)  # 첫가끝소리 -> 소리마디 (NFD -> NFC)
             chars = list(token)
             if len(chars) > self.max_input_chars_per_word:
                 output_tokens.append(self.unk_token)
@@ -238,6 +237,29 @@ class FullTokenizer(object):
         self.vocab = load_vocab(vocab_file)  # key - value(idx)
         self.basic_tokenizer = BasicTokenizer(do_lower_case=do_lower_case)
         self.wordpiece_tokenizer = WordpieceTokenizer(vocab=self.vocab)
+        self.khaiii_api = KhaiiiApi()
+
+    def str_to_morphs(self, text):
+        '''
+        한글 형태소 분석기 khaiii
+        :param text:
+        :return: 형태소 단위로 띄어쓰기 된 text
+
+        ** KhaiiiWord **
+        lex : 원본의 토큰
+        begin : 원본에서 토큰의 시작 위치
+        morphs : KhaiiiMorph 객체들의 리스트
+        *** KhaiiiMorph ***
+        lex : 형태소 토큰
+        tag : 품사
+        '''
+        output = []
+        for word in self.khaiii_api.analyze(text):
+            morphs = word.morphs
+            for morph in morphs:
+                output.append(morph.lex)
+
+        return ' '.join(output)
 
     def tokenize(self, question_text) -> list:
         '''
@@ -246,6 +268,8 @@ class FullTokenizer(object):
         '''
         tokens = []
         for token in self.basic_tokenizer.tokenize(question_text):
+            token = unicodedata.normalize('NFC', token)  # 첫가끝소리 -> 소리마디 (NFD -> NFC)
+            token = self.str_to_morphs(token)
             for sub_token in self.wordpiece_tokenizer.tokenize(token):
                 tokens.append(sub_token)
                 # ex)
@@ -327,29 +351,7 @@ class PreProcessor(object):
 
         self.tokenizer = FullTokenizer(params['vocab_file'])
         self.vocab = load_vocab_as_list(params['vocab_file'])
-        self.khaiii_api = KhaiiiApi()
 
-    def str_to_morphs(self, text):
-        '''
-        한글 형태소 분석기 khaiii
-        :param text:
-        :return: list of morphs tokens
-
-        ** KhaiiiWord **
-        lex : 원본의 토큰
-        begin : 원본에서 토큰의 시작 위치
-        morphs : KhaiiiMorph 객체들의 리스트
-        *** KhaiiiMorph ***
-        lex : 형태소 토큰
-        tag : 품사
-        '''
-        output = []
-        for word in self.khaiii_api.analyze(text):
-            morphs = word.morphs
-            for morph in morphs:
-                output.append(morph.lex)
-
-        return output
 
     def str_to_tokens(self, text):
         '''
