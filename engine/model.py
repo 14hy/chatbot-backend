@@ -118,8 +118,7 @@ def gelu(x):
     '''
     RELU 보다 부드럽다고 한다.
     별 차이는 없고, 음수에서 0이 아니고 어느정도 값이 존재함
-    양수에서 초반에는 Relu보다 값이 작음 결국에는 같아지는 듯.
-    # TODO RELU를 사용하면?
+    양수에서 초반에는 Relu보다 값이 작고 결국에는 같아진다.
     '''
 
     cdf = 0.5 * (1.0 + tf.tanh(
@@ -318,6 +317,7 @@ def attention_layer(from_tensor, to_tensor, attention_mask, num_attention_heads,
     3. query, key scaled dot product. ( attention 과정) 둘이같으니까 self, -> why self attention 부분.
     4. softmax => value 에 대한 attention 확률 값으로.
     5. value 에 곱해서 가중치를 줌.
+    6. 가중 합 된(attention된) 레이어 리턴
 
     :param from_tensor: [batch_size, seq_length, size_per_head]
     :param to_tensor: [batch_size, seq_length, size_per_head]
@@ -327,25 +327,23 @@ def attention_layer(from_tensor, to_tensor, attention_mask, num_attention_heads,
     :param attention_probs_dropout_prob: float.
     :param initializer_range: float.
     :param do_return_2d_tensor: bool. [batch_size, seq_length, seq_length] -> [batch_size * seq_length, seq_length]
-    :param batch_size: int 안써.
-    :param from_seq_length: int 안써.
-    :param to_seq_length: int 안써.
+    :param batch_size: int
+    :param from_seq_length: int
+    :param to_seq_length: int
     :return: float Tensor of shape [batch_size, from_seq_length, num_attention_heads * size_per_head]
     or [batch_size * seq_length, seq_length] (do_return_2d_tensor = True)
     '''
-
-    # 스코어를 위한 transpose 함수. ????
 
     from_shape = get_shape(from_tensor, 2)
     to_shape = get_shape(to_tensor, 2)
 
 
-  # Scalar dimensions referenced here:
-  #   B = batch size (number of sequences)
-  #   F = `from_tensor` sequence length
-  #   T = `to_tensor` sequence length
-  #   N = `num_attention_heads`
-  #   H = `size_per_head`
+    # Scalar dimensions referenced here:
+    #   B = batch size (number of sequences)
+    #   F = `from_tensor` sequence length
+    #   T = `to_tensor` sequence length
+    #   N = `num_attention_heads`
+    #   H = `size_per_head`
 
     # rank-3 -> rank-2 로 변경,
     # [batch_size, seq_length, size_per_head] => [batch_size * seq_length, size_per_head]
@@ -453,7 +451,7 @@ def tranformer_model(input_tensor, attention_mask, hidden_size, num_hidden_layer
     :param input_tensor: float Tensor of shape [batch_size, seq_length, embedding_size].
     :param attention_mask: float Tensor of shape [batch_size, seq_length, seq_length]
     :param hidden_size: int = embedding_size (for residual)
-    :param num_hidden_layers: int num of transformer layer (기본 6)
+    :param num_hidden_layers: int num of transformer layer (기본 12, 원래 트랜스포머는 기본 6.)
     :param num_attention_heads: int (논문에서 h)
     :param intermediate_size: int feed_forward layer ? # feed-foward layer hidden size.
     :param intermediate_act_fn: activation function. # default : gelu
@@ -569,16 +567,24 @@ def tranformer_model(input_tensor, attention_mask, hidden_size, num_hidden_layer
 class Model(object):
     def __init__(self):
 
+        # placeholders
         self.input_ids = None
         self.input_masks = None
         self.segment_ids =  None
+
+        # pred indexes
         self.start_pred = None
         self.end_pred = None
+
+        # tf.Session()
         self.sess = None
 
+        # feature vectors
+        self.all_encoder_layers = None
+
     def build_model(self, params, max_seq_length = 384,
-                    bert_json = './ckpt/bert_config.json',
-                    model_path='./ckpt/model.ckpt-30203'): # TODO 클래스 param 변수
+                    bert_json = '../ckpt/bert_config.json',
+                    model_path='../ckpt/model.ckpt-30203'): # TODO 클래스 param 변수
 
         bert_config = BertConfig()
         bert_config.read_from_json_file(bert_json)
@@ -589,7 +595,7 @@ class Model(object):
 
         embedding_output = None  # sum of Token, segment, position
         embedding_table = None  # id embedding table
-        all_encoder_layers = None  # transformer model
+        self.all_encoder_layers = None  # transformer model
         sequence_output = None  # output layer
 
         with tf.variable_scope(name_or_scope=None, default_name='bert'):
@@ -611,7 +617,7 @@ class Model(object):
 
             with tf.variable_scope(name_or_scope='encoder'):
                 attention_mask = create_attention_mask_from_input_mask(self.input_ids, self.input_masks)
-                all_encoder_layers = tranformer_model(input_tensor=embedding_output,
+                self.all_encoder_layers = tranformer_model(input_tensor=embedding_output,
                                                       attention_mask=attention_mask,
                                                       hidden_size=bert_config.hidden_size,
                                                       num_hidden_layers=bert_config.num_hidden_layers,
@@ -623,7 +629,7 @@ class Model(object):
                                                       initializer_range=bert_config.initializer_range,
                                                       do_return_all_layers=True)
 
-                sequence_output = all_encoder_layers[-1]
+                sequence_output = self.all_encoder_layers[-1]
 
             with tf.variable_scope('pooler'):
                 first_token_tensor = tf.squeeze(sequence_output[:, 0:1, :], axis=1)
@@ -667,16 +673,38 @@ class Model(object):
         assignment_map, initialized_variable_names = get_assignment_map_from_checkpoint(tvars, model_path)  # 201
         tf.train.init_from_checkpoint(model_path, assignment_map)
 
-    def predict(self, feature, model_path= './ckpt/model.ckpt-30203'):
+        # self.sess = tf.Session()
+        # self.sess.run(tf.global_variables_initializer())
+        # tvars = tf.trainable_variables()
+        # for _ in range(2):
+        #     assignment_map, initialized_variable_names = get_assignment_map_from_checkpoint(tvars, model_path)  # 201
+        #     tf.train.init_from_checkpoint(model_path, assignment_map)
+
+    def predict(self, feature):
 
         feed_dict = {self.input_ids: np.array(feature.input_ids).reshape((1, -1)),
                      self.input_masks: np.array(feature.input_mask).reshape(1, -1),
                      self.segment_ids: np.array(feature.segment_ids).reshape(1, -1)}
 
         start, end = self.sess.run([self.start_pred, self.end_pred], feed_dict)
-        # start_n, end_n = sess.run([start_n_best, end_n_best], feed_dict)
+        # start_n, end_n = sess.run([start_n_best, end_n_best], feed_dict) # TODO n best answers
 
         return start, end
 
+    def extract_feature_vectors(self, feature, layers=-1):
+        '''
+
+        :param feature: InputFeature
+        :param layers: -1, -2, -3...
+        -1 = Transformer의 마지막 레이어,
+        :return:
+        '''
+        feed_dict = {self.input_ids: np.array(feature.input_ids).reshape((1, -1)),
+                     self.input_masks: np.array(feature.input_mask).reshape(1, -1),
+                     self.segment_ids: np.array(feature.segment_ids).reshape(1, -1)}
+
+        feature_vectors = self.sess.run(self.all_encoder_layers, feed_dict)
+
+        return feature_vectors[layers]
 
 

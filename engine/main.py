@@ -81,5 +81,14 @@ class Engine(object):
         input_feature.show()
         start, end = self.model.predict(input_feature)  # warm up.
         self.answer = self.preprocessor.pred_to_text(start, end, input_feature)
-        print(self.answer)
+        print('생성된 답변 : ', self.answer)
         return self.get_answer()
+
+    def text_to_feature_vectors(self, text):
+        input_feature = self.preprocessor.create_feature(self.question,
+                                                         self.context,
+                                                         self.params)
+        input_feature.show()
+        feature_vectors = self.model.extract_feature_vectors(input_feature, -2)
+        print('생성된 feature vector', feature_vectors)
+        return feature_vectors
