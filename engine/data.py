@@ -2,17 +2,17 @@ import collections
 import unicodedata
 
 
-
 def _is_control(char):
     """Checks whether `chars` is a control character."""
     # These are technically control characters but we count them as whitespace
     # characters.
     if char == "\t" or char == "\n" or char == "\r":
-        return False # _is_whitespace 에서 처리할 것임
+        return False  # _is_whitespace 에서 처리할 것임
     cat = unicodedata.category(char)
     if cat.startswith("C"):
         return True
     return False
+
 
 def whitespace_tokenize(text):
     """Runs basic whitespace cleaning and splitting on a piece of text."""
@@ -28,7 +28,7 @@ def _is_punctuation(char):
     :param char:
     :return:
     '''
-    cp = ord(char) # 유니코드
+    cp = ord(char)  # 유니코드
     # We treat all non-letter/number ASCII as punctuation.
     # Characters such as "^", "$", and "`" are not in the Unicode
     # Punctuation class but we treat them as punctuation anyways, for
@@ -51,6 +51,7 @@ class BasicTokenizer(object):
     4. accent?
     5. 중국어?
     '''
+
     def __init__(self, do_lower_case=True):
 
         self.do_lower_case = True
@@ -101,10 +102,10 @@ class BasicTokenizer(object):
         for char in text:
             # cp = 0 - NULL,
             # null 이거나, "",
-            cp = ord(char) # 유니코드 번호로 리턴
-            if cp == 0 or cp == 0xfffd or _is_control(char): # null, '', control character(EOF등) 라면, 넣지 않음
+            cp = ord(char)  # 유니코드 번호로 리턴
+            if cp == 0 or cp == 0xfffd or _is_control(char):  # null, '', control character(EOF등) 라면, 넣지 않음
                 continue
-            if _is_whitespace(char): # \t, \r \n 등 모두 띄어쓰기로 처리
+            if _is_whitespace(char):  # \t, \r \n 등 모두 띄어쓰기로 처리
                 output.append(" ")
             else:
                 output.append(char)
@@ -117,20 +118,20 @@ class BasicTokenizer(object):
         '''
         # 유니코드 정규화
         # https://ko.wikipedia.org/wiki/%EC%9C%A0%EB%8B%88%EC%BD%94%EB%93%9C_%EC%A0%95%EA%B7%9C%ED%99%94
-        text = unicodedata.normalize("NFD", text) # normalize 하면 자모음 단위로 쪼갤 수 있게 됨
+        text = unicodedata.normalize("NFD", text)  # normalize 하면 자모음 단위로 쪼갤 수 있게 됨
         output = []
         chars = list(text)
-        for i in range(len(chars)): #
+        for i in range(len(chars)):  #
             cat = unicodedata.category(chars[i])
-            if cat == "Mn": # “Nonspacing Mark”
+            if cat == "Mn":  # “Nonspacing Mark”
                 continue
             output.append(chars[i])
         return "".join(output)
 
 
-
 class WordpieceTokenizer(object):
     '''wordpiece 임베딩에 맞는 형식으로 변환'''
+
     def __init__(self, vocab, unk_token="[UNK]", max_input_chars_per_word=200):
         self.vocab = vocab
         self.unk_token = unk_token
@@ -145,19 +146,19 @@ class WordpieceTokenizer(object):
 
         output_tokens = []
         for token in whitespace_tokenize(text):
-            token = unicodedata.normalize('NFC', token) # 첫가끝소리 -> 소리마디 (NFD -> NFC)
+            token = unicodedata.normalize('NFC', token)  # 첫가끝소리 -> 소리마디 (NFD -> NFC)
             chars = list(token)
             if len(chars) > self.max_input_chars_per_word:
                 output_tokens.append(self.unk_token)
                 continue
 
-            is_bad = False # unknown voca
-            start = 0 # for greedy algorithm
-            sub_tokens = [] # wordpiece 형식/ 단위
+            is_bad = False  # unknown voca
+            start = 0  # for greedy algorithm
+            sub_tokens = []  # wordpiece 형식/ 단위
             # greedy algorithm finding longest token.
             while start < len(chars):
                 end = len(chars)  # ?
-                cur_substr = None # ?
+                cur_substr = None  # ?
                 while start < end:
                     substr = ''.join(chars[start:end])
                     if start > 0:
@@ -165,7 +166,7 @@ class WordpieceTokenizer(object):
                     if substr in self.vocab:
                         cur_substr = substr
                         break
-                    end -= 1 # 긴 것 부터 찾도록,
+                    end -= 1  # 긴 것 부터 찾도록,
                 if cur_substr is None:
                     # 찾지 못함
                     is_bad = True
@@ -181,6 +182,7 @@ class WordpieceTokenizer(object):
                 output_tokens.extend(sub_tokens)
 
         return output_tokens
+
 
 def load_vocab(vocab_file):
     """Loads a vocabulary file into a dictionary."""
@@ -209,6 +211,7 @@ def load_vocab_as_list(vocab_file):
             vocab.append(line)
     return vocab
 
+
 def convert_by_vocab(vocab, items):
     '''
 
@@ -221,14 +224,15 @@ def convert_by_vocab(vocab, items):
         output.append(vocab[item])
     return output
 
+
 class FullTokenizer(object):
     def __init__(self, vocab_file, do_lower_case=True):
 
-        self.vocab = load_vocab(vocab_file) # key - value(idx)
+        self.vocab = load_vocab(vocab_file)  # key - value(idx)
         self.basic_tokenizer = BasicTokenizer(do_lower_case=do_lower_case)
         self.wordpiece_tokenizer = WordpieceTokenizer(vocab=self.vocab)
 
-    def tokenize(self, question_text):
+    def tokenize(self, question_text) -> list:
         '''
         :param question_text: str
         :return: list of str
@@ -244,7 +248,6 @@ class FullTokenizer(object):
 
     def convert_tokens_to_ids(self, tokens):
         return convert_by_vocab(self.vocab, tokens)
-
 
     def convert_ids_to_tokens(self):
         pass
@@ -276,6 +279,7 @@ class InputFeatures(object):
         print('segment_ids:', self.segment_ids)
         print('unique_id:', self.unique_id)
 
+
 def _is_whitespace(char):
     """Checks whether `chars` is a whitespace character."""
     # \t, \n, and \r are technically contorl characters but we treat them
@@ -287,9 +291,10 @@ def _is_whitespace(char):
         return True
     return False
 
-def _tokenize_doc(text): # TODO 다른 이름?
-    '''
 
+def _tokenize_str(text):
+    '''
+    text 를 받아, 전처리 한 후, 토큰들로 바꿈
     :param text: string
     :return: list of tokens
     '''
@@ -308,35 +313,53 @@ def _tokenize_doc(text): # TODO 다른 이름?
 
     return tokens
 
+
 class PreProcessor(object):
 
     def __init__(self, params):
 
-
         self.tokenizer = FullTokenizer(params['vocab_file'])
         self.vocab = load_vocab_as_list(params['vocab_file'])
 
+    def str_to_tokens(self, text):
+        '''
+
+        :param text: str
+        :return: list[str] tokenized wordpieces
+        '''
+        return self.tokenizer.tokenize(text)
+
+    def tokens_to_idx(self, tokens):
+        '''
+
+        :param tokens: list of tokens
+        :return: list of indexes
+        '''
+        output = []
+        for token in tokens:
+            output.append(self.vocab.index(token))
+        return output
 
     def create_feature(self, question, context, params):
 
         unique_id = params['unique_id']
         max_query_length = params['max_query_length']
         max_seq_length = params['max_seq_length']
-        vocab_file = params['vocab_file']
 
         question_text = question
-        doc_tokens = _tokenize_doc(context)
+        doc_tokens = _tokenize_str(context)
 
         token_to_original_index = []
         original_to_token_index = []
         all_doc_tokens = []
 
-        query_tokens = self.tokenizer.tokenize(question_text)
+        query_tokens = self.str_to_tokens(question_text)
         if len(query_tokens) > max_query_length:
             query_tokens = query_tokens[0:max_query_length]
+
         for i, token in enumerate(doc_tokens):
             original_to_token_index.append(i)
-            sub_tokens = self.tokenizer.tokenize(token)
+            sub_tokens = self.str_to_tokens(token)
             for sub_token in sub_tokens:
                 token_to_original_index.append(i)
                 all_doc_tokens.append(sub_token)
@@ -378,6 +401,8 @@ class PreProcessor(object):
         for i in range(len(input_ids)):
             if input_ids[i] in self.vocab:
                 input_ids[i] = self.vocab.index(input_ids[i])
+
+        # input_ids = self.tokens_to_idx(input_ids)
 
         feature = InputFeatures(unique_id,
                                 input_ids,

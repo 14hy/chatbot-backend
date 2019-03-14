@@ -155,7 +155,7 @@ def embedding_lookup(input_ids,
 
     :param input_ids: int Tensor of shape [batch_size, seq_length]
     :param vocab_size: int.
-    :param embedding_size: int.
+    :param embedding_size: int -> same as hidden size
     :param initializer_range: float 임베딩 초기화 범위.
     :param word_embedding_name: str
     :param use_one_hot_embeddings: True -> one-hot False -> tf.gather() # ?
