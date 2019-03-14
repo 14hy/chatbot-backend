@@ -1,4 +1,4 @@
-from engine.tokenization import FullTokenizer, _tokenize_str
+from engine.tokenization import FullTokenizer
 
 
 def load_vocab_as_list(vocab_file):
