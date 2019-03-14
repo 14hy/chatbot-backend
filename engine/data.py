@@ -59,6 +59,11 @@ class BasicTokenizer(object):
         self.do_lower_case = True
 
     def tokenize(self, text):
+        '''
+
+        :param text:
+        :return:
+        '''
         # 중국어처리뺌
         text = self._clean_text(text)
         # assert text != '' # ?
@@ -330,18 +335,19 @@ class PreProcessor(object):
         :param text:
         :return: list of morphs tokens
 
-        ** KhaiiiWord 객체 **
+        ** KhaiiiWord **
         lex : 원본의 토큰
         begin : 원본에서 토큰의 시작 위치
-        morphs : 형태소/품사
-        __str__ : lex+\t+morph+'+'+...
+        morphs : KhaiiiMorph 객체들의 리스트
+        *** KhaiiiMorph ***
+        lex : 형태소 토큰
+        tag : 품사
         '''
         output = []
         for word in self.khaiii_api.analyze(text):
             morphs = word.morphs
             for morph in morphs:
-                morph = morph.split('/')[0]
-                output.append(morph)
+                output.append(morph.lex)
 
         return output
 
