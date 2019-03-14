@@ -7,6 +7,8 @@ import sys
 import tensorflow as tf
 import numpy as np
 
+# TODO Estimator, tf.data 로 추상화하기
+
 def get_assignment_map_from_checkpoint(tvars, init_checkpoint):
   """Compute the union of the current variables and checkpoint variables."""
   assignment_map = {}
