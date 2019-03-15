@@ -8,6 +8,8 @@ import tensorflow as tf
 import numpy as np
 
 # TODO Estimator, tf.data 로 추상화하기
+import config
+
 
 def get_assignment_map_from_checkpoint(tvars, init_checkpoint):
   """Compute the union of the current variables and checkpoint variables."""
@@ -566,6 +568,7 @@ def tranformer_model(input_tensor, attention_mask, hidden_size, num_hidden_layer
 
 class Model(object):
     def __init__(self):
+        self.DEFAULT_CONFIG = config.DEFAULT_CONFIG
 
         # placeholders
         self.input_ids = None
@@ -582,10 +585,13 @@ class Model(object):
         # feature vectors
         self.all_encoder_layers = None
 
-    def build_model(self, params, max_seq_length = 384,
-                    bert_json = '../ckpt/bert_config.json',
-                    model_path='../ckpt/model.ckpt-30203'): # TODO 클래스 param 변수
+    def build_model(self): # TODO 클래스 param 변수
+        '''
 
+        :return:
+        '''
+        bert_json = self.DEFAULT_CONFIG['bert_json']
+        model_path = self.DEFAULT_CONFIG['model_path']
         bert_config = BertConfig()
         bert_config.read_from_json_file(bert_json)
 
@@ -667,7 +673,7 @@ class Model(object):
         tvars = tf.trainable_variables()
         assignment_map, initialized_variable_names = get_assignment_map_from_checkpoint(tvars, model_path)  # 201
         tf.train.init_from_checkpoint(model_path, assignment_map)
-        self.sess = tf.Session()
+        self.sess = tf.Session() # TODO 두번 불러야 정상작동되는 에러 해결
         self.sess.run(tf.global_variables_initializer())
         tvars = tf.trainable_variables()
         assignment_map, initialized_variable_names = get_assignment_map_from_checkpoint(tvars, model_path)  # 201
