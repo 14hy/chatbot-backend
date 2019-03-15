@@ -592,6 +592,8 @@ class Model(object):
         '''
         bert_json = self.DEFAULT_CONFIG['bert_json']
         model_path = self.DEFAULT_CONFIG['model_path']
+        max_seq_length = self.DEFAULT_CONFIG['max_seq_length']
+
         bert_config = BertConfig()
         bert_config.read_from_json_file(bert_json)
 
