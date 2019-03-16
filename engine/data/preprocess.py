@@ -1,5 +1,6 @@
 import config
 from engine.tokenization import FullTokenizer
+from engine.utils import Singleton
 
 
 def load_vocab_as_list(vocab_file):
@@ -29,21 +30,19 @@ def convert_by_vocab(vocab, items):
 
 class InputFeatures(object):
     def __init__(self,
-                 unique_id,
                  input_ids,
                  input_mask=None,
                  segment_ids=None):
+        self.input_ids = input_ids
         self.input_mask = input_mask
         self.segment_ids = segment_ids
-        self.unique_id = unique_id
-
     def show(self):
         print('input_ids:', self.input_ids)
         print('input_mask:', self.input_mask)
         print('segment_ids:', self.segment_ids)
 
 
-class PreProcessor(object):
+class PreProcessor(metaclass=Singleton):
 
     def __init__(self):
 
@@ -72,7 +71,7 @@ class PreProcessor(object):
             output.append(self.vocab.index(token))
         return output
 
-    def create_InputFeature(self, query_text, params, context=None):
+    def create_InputFeature(self, query_text, context=None):
         '''
 
         :param query_text:
@@ -151,7 +150,7 @@ class PreProcessor(object):
 
         # input_ids = self.tokens_to_idx(input_ids)
 
-        feature = InputFeatures(input_ids,
+        feature = InputFeatures(input_ids=input_ids,
                                 input_mask=input_mask,
                                 segment_ids=segment_ids)
 

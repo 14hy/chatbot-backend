@@ -1,12 +1,23 @@
 import config
 from engine.data.preprocess import PreProcessor
-from engine.model import Model
+from engine.model.bert import Model
+from khaiii import KhaiiiApi
 
 class Question(object):
-    def __init__(self, text, category, answer, feature_vector):
+    def __init__(self, text, category, answer, feature_vector, morphs, object_id=None):
+        '''
+
+        :param text: original question text
+        :param category:
+        :param answer:
+        :param feature_vector:
+        :param morphs: KhaiiiWord object
+        '''
+        self.object_id = object_id
         self.category = category
         self.answer = answer
         self.text = text
+        self.morphs = morphs
         self.feature_vector = feature_vector
 
 class QuestionMaker(object):
@@ -17,7 +28,9 @@ class QuestionMaker(object):
         self.preprocessor = PreProcessor()
 
         self.bert_model = Model()
-        self.bert_model.build_model()
+
+        self.khaiii_api = KhaiiiApi()
+
 
     def create_question(self, text, category, answer=None):
         '''
@@ -33,9 +46,13 @@ class QuestionMaker(object):
             raise Exception('category must be ', categories)
 
         input_feature = self.preprocessor.create_InputFeature(text)
-        feature_vector = self.bert_model.extract_feature_vector(input_feature)
+        feature_vector = self.bert_model.extract_feature_vector(input_feature, layers=-1)
 
-        return Question(text, category, answer, feature_vector)
+        morphs = self.khaiii_api.analyze(text)
+
+        return Question(text, category, answer, feature_vector, morphs)
 
 if __name__ == '__main__':
     qm = QuestionMaker()
+    print(qm.create_question('안녕하세요, 테스트 입니다!', '셔틀', answer='넵.').feature_vector)
+    print(qm.create_question('안녕하세요, 테스트 입니다!', '셔틀', answer='넵.').feature_vector.shape)

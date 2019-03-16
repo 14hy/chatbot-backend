@@ -9,6 +9,7 @@ import numpy as np
 
 # TODO Estimator, tf.data 로 추상화하기
 import config
+from engine.utils import Singleton
 
 
 def get_assignment_map_from_checkpoint(tvars, init_checkpoint):
@@ -566,7 +567,7 @@ def tranformer_model(input_tensor, attention_mask, hidden_size, num_hidden_layer
         final_output = reshape_from_matrix(prev_output, input_shape)
         return final_output
 
-class Model(object):
+class Model(metaclass=Singleton):
     def __init__(self):
         self.DEFAULT_CONFIG = config.DEFAULT_CONFIG
 
@@ -584,6 +585,9 @@ class Model(object):
 
         # feature vectors
         self.all_encoder_layers = None
+        self.pooled_output = None
+
+        self.build_model()
 
     def build_model(self): # TODO 클래스 param 변수
         '''
@@ -641,7 +645,7 @@ class Model(object):
 
             with tf.variable_scope('pooler'):
                 first_token_tensor = tf.squeeze(sequence_output[:, 0:1, :], axis=1)
-                pooled_output = tf.layers.dense(inputs=first_token_tensor,
+                self.pooled_output = tf.layers.dense(inputs=first_token_tensor,
                                                 units=bert_config.hidden_size,
                                                 activation=tf.nn.tanh,
                                                 kernel_initializer=tf.truncated_normal_initializer(
@@ -675,12 +679,15 @@ class Model(object):
         tvars = tf.trainable_variables()
         assignment_map, initialized_variable_names = get_assignment_map_from_checkpoint(tvars, model_path)  # 201
         tf.train.init_from_checkpoint(model_path, assignment_map)
-        self.sess = tf.Session() # TODO 두번 불러야 정상작동되는 에러 해결
+        self.sess = tf.Session() # TODO 두번 불러야 정상작동되는 에러 해결하자
         self.sess.run(tf.global_variables_initializer())
         tvars = tf.trainable_variables()
         assignment_map, initialized_variable_names = get_assignment_map_from_checkpoint(tvars, model_path)  # 201
         tf.train.init_from_checkpoint(model_path, assignment_map)
 
+        for var in tvars:
+            if var.name in initialized_variable_names:
+                print(var.name, ' - INIT FROM CKPT')
         # self.sess = tf.Session()
         # self.sess.run(tf.global_variables_initializer())
         # tvars = tf.trainable_variables()
@@ -699,7 +706,7 @@ class Model(object):
 
         return start, end
 
-    def extract_feature_vectors(self, feature, layers=-1):
+    def extract_feature_vector(self, feature, layers=-1):
         '''
 
         :param feature: InputFeature
@@ -710,9 +717,7 @@ class Model(object):
         feed_dict = {self.input_ids: np.array(feature.input_ids).reshape((1, -1)),
                      self.input_masks: np.array(feature.input_mask).reshape(1, -1),
                      self.segment_ids: np.array(feature.segment_ids).reshape(1, -1)}
+        print(self.sess)
+        feature_vectors = self.sess.run(self.pooled_output, feed_dict)
 
-        feature_vectors = self.sess.run(self.all_encoder_layers, feed_dict)
-
-        return feature_vectors[layers]
-
-
+        return feature_vectors
