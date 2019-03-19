@@ -60,7 +60,13 @@ class PymongoWrapper(metaclass=Singleton):
 
         pass
     def get_question_by_text(self, text):
-        pass
+        '''
+
+        :param text:
+        :return: Question object
+        '''
+        document = self._questions.find_one({'text': text})
+        return self._convert_to_question(document)
     def get_questions_by_category(self, category):
         '''
         :param category:
@@ -88,6 +94,12 @@ class PymongoWrapper(metaclass=Singleton):
                             feature_vector,
                             morphs)
         return question
+
+    def delete_duplications(self):
+        pass # 중복 텍스트 지우기 # TODO
+
+    def replace_question(self, question):
+        pass # TODO
 
 
 if __name__ == '__main__':

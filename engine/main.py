@@ -1,3 +1,6 @@
+from time import time
+
+from engine.data.handler import ChatHandler
 from engine.data.preprocess import PreProcessor
 from engine.model.bert import Model
 
@@ -10,6 +13,7 @@ class Engine(object):
         self.example = None
         self.vocab = None
         self.model = Model()
+        self.chat_handler = ChatHandler()
 
         self.test_mode()
         self.preprocessor = PreProcessor()
@@ -55,28 +59,22 @@ class Engine(object):
             raise Exception("question is None")
         pass
 
-    def chat_to_answer(self, question):
+    def chat_to_answer(self, chat):
         '''
         프론트로부터 질문을 받아 적절한 답변을 보냄
-        :param question: str
+        :param chat: str
         :return: str
         '''
+        tic = time()
 
         # TODO Query Feature extractor.
-
-        # TODO query preprocess
-
-
-        # TODO query classification
-
-        # TODO 적절한 모델로 보낸 후 답변 생성
-
-        print('*** question ***\n', question)
-        self._text_to_feature_vectors(question)
+        query = self.chat_handler.create_query_from_chat(chat)
 
 
-        answer = self.preprocessor.pred_to_text(start, end, input_feature)
+        answer = query.answer
+        toc = time()
         print('*** 생성된 답변 ***\n', answer)
+        print('*** 소모 시간: {}'.format(toc-tic))
 
         return answer
 

@@ -717,7 +717,6 @@ class Model(metaclass=Singleton):
         feed_dict = {self.input_ids: np.array(feature.input_ids).reshape((1, -1)),
                      self.input_masks: np.array(feature.input_mask).reshape(1, -1),
                      self.segment_ids: np.array(feature.segment_ids).reshape(1, -1)}
-        print(self.sess)
         feature_vectors = self.sess.run(self.pooled_output, feed_dict)
 
-        return feature_vectors
+        return np.reshape(feature_vectors, newshape=(-1))
