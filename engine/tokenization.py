@@ -96,9 +96,11 @@ class BasicTokenizer(object):
         text_split_by_whitespace = whitespace_tokenize(text)
         split_tokens = []
         for token in text_split_by_whitespace:
+            print(token)
             if self.do_lower_case:
                 token = token.lower()
                 token = self._run_strip_accents(token)
+                token = unicodedata.normalize('NFC', token)
             split_tokens.extend(self._run_split_on_punc(token))
         output_tokens = whitespace_tokenize(' '.join(split_tokens))
         return output_tokens
@@ -159,6 +161,7 @@ class BasicTokenizer(object):
             if cat == "Mn":  # “Nonspacing Mark”
                 continue
             output.append(chars[i])
+
         return "".join(output)
 
 
@@ -193,8 +196,8 @@ class WordpieceTokenizer(object):
                 cur_substr = None  # ?
                 while start < end:
                     substr = ''.join(chars[start:end])
-                    # if start > 0:
-                    #     substr = '##' + substr # TODO
+                    if start > 0:
+                        substr = '##' + substr # TODO
                     if substr in self.vocab:
                         cur_substr = substr
                         break
@@ -291,3 +294,6 @@ class FullTokenizer(object):
 
             return tokens
         return _tokenize_str(context)
+#
+# if __name__ == "__main__":
+#     tokenizer = FullTokenizer()
