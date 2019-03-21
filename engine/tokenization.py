@@ -96,7 +96,6 @@ class BasicTokenizer(object):
         text_split_by_whitespace = whitespace_tokenize(text)
         split_tokens = []
         for token in text_split_by_whitespace:
-            print(token)
             if self.do_lower_case:
                 token = token.lower()
                 token = self._run_strip_accents(token)
@@ -255,6 +254,7 @@ class FullTokenizer(object):
                 # ex)
                 # <class 'list'>: ['유', '##전', '##자', '중', '##복', '##에', '의한', 'd', '##na', '염', '##기', '##서', '##열', '##은',
                 # '어떤', '순', '##서를', '바', '##꿔', ',', '본', 'd', '##na', '##와', '다른', '단', '##백', '##질']
+        print('tokenized text:',tokens)
         return tokens
 
     def convert_tokens_to_ids(self, tokens):
