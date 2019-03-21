@@ -20,7 +20,7 @@ def test_REST(request):
         chat = request.GET['chat']
         # serializer = MemberSerializer(restapi, many=True)\
         return HttpResponse(json.dumps(engine.chat_to_answer(chat),
-                                        ensure_ascii=False), content_type="application/json")
+                                        ensure_ascii=False), content_type="application/json; charset=utf-8")
 
     elif request.method == 'POST':
         data = JSONParser().parse(request)

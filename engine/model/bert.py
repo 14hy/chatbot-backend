@@ -3,6 +3,7 @@ import json
 import math
 import re
 import sys
+import time
 
 import tensorflow as tf
 import numpy as np
@@ -714,9 +715,11 @@ class Model(metaclass=Singleton):
         -1 = Transformer의 마지막 레이어,
         :return:
         '''
+        tic = time.time()
         feed_dict = {self.input_ids: np.array(feature.input_ids).reshape((1, -1)),
                      self.input_masks: np.array(feature.input_mask).reshape(1, -1),
                      self.segment_ids: np.array(feature.segment_ids).reshape(1, -1)}
         feature_vectors = self.sess.run(self.pooled_output, feed_dict)
-
+        toc = time.time()
+        print('***extracting feature...time:{}***'.format(toc-tic))
         return np.reshape(feature_vectors, newshape=(-1))
