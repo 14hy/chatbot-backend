@@ -247,7 +247,6 @@ class FullTokenizer(object):
         tokens = []
         for token in self.basic_tokenizer.tokenize(question_text):
             token = unicodedata.normalize('NFC', token)  # 첫가끝소리 -> 소리마디 (NFD -> NFC)
-            token = self.str_to_morphs(token)
             for sub_token in self.wordpiece_tokenizer.tokenize(token):
                 tokens.append(sub_token)
                 # ex)

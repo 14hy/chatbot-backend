@@ -1,7 +1,6 @@
 import config
 from engine.data.preprocess import PreProcessor
 from engine.model.bert import Model
-from khaiii import KhaiiiApi
 
 class Question(object):
     def __init__(self, text, category, answer, feature_vector, morphs, object_id=None):
@@ -29,9 +28,6 @@ class QuestionMaker(object):
 
         self.bert_model = Model()
 
-        self.khaiii_api = KhaiiiApi()
-
-
     def create_question(self, text, category, answer=None):
         '''
 
@@ -48,7 +44,7 @@ class QuestionMaker(object):
         input_feature = self.preprocessor.create_InputFeature(text)
         feature_vector = self.bert_model.extract_feature_vector(input_feature, layers=-1)
 
-        morphs = self.khaiii_api.analyze(text)
+        morphs = None
 
         return Question(text, category, answer, feature_vector, morphs)
 
