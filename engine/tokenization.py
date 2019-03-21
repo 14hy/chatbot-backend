@@ -1,9 +1,6 @@
 import collections
 import unicodedata
 
-from khaiii import KhaiiiApi
-
-
 
 def convert_by_vocab(vocab, items):
     '''
@@ -196,8 +193,8 @@ class WordpieceTokenizer(object):
                 cur_substr = None  # ?
                 while start < end:
                     substr = ''.join(chars[start:end])
-                    if start > 0:
-                        substr = '##' + substr
+                    # if start > 0:
+                    #     substr = '##' + substr # TODO
                     if substr in self.vocab:
                         cur_substr = substr
                         break
@@ -240,29 +237,7 @@ class FullTokenizer(object):
         self.vocab = load_vocab(vocab_file)  # key - value(idx)
         self.basic_tokenizer = BasicTokenizer(do_lower_case=do_lower_case)
         self.wordpiece_tokenizer = WordpieceTokenizer(vocab=self.vocab)
-        self.khaiii_api = KhaiiiApi()
 
-    def str_to_morphs(self, text):
-        '''
-        한글 형태소 분석기 khaiii
-        :param text:
-        :return: 형태소 단위로 띄어쓰기 된 text
-
-        ** KhaiiiWord **
-        lex : 원본의 토큰
-        begin : 원본에서 토큰의 시작 위치
-        morphs : KhaiiiMorph 객체들의 리스트
-        *** KhaiiiMorph ***
-        lex : 형태소 토큰
-        tag : 품사
-        '''
-        output = []
-        for word in self.khaiii_api.analyze(text):
-            morphs = word.morphs
-            for morph in morphs:
-                output.append(morph.lex)
-
-        return ' '.join(output)
 
     def tokenize(self, question_text) -> list:
         '''
@@ -272,7 +247,7 @@ class FullTokenizer(object):
         tokens = []
         for token in self.basic_tokenizer.tokenize(question_text):
             token = unicodedata.normalize('NFC', token)  # 첫가끝소리 -> 소리마디 (NFD -> NFC)
-            # token = self.str_to_morphs(token)
+            token = self.str_to_morphs(token)
             for sub_token in self.wordpiece_tokenizer.tokenize(token):
                 tokens.append(sub_token)
                 # ex)
