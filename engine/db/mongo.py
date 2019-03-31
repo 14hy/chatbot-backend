@@ -45,7 +45,7 @@ class PymongoWrapper(metaclass=Singleton):
         '''
         with open(txt, mode='r', encoding='utf8') as f:
             for line in f:
-                tokens = line.split('|||')
+                tokens = line.strip('\n').split('|||')
                 q = self._question_maker.create_question(tokens[0], tokens[2], tokens[1])
                 self.insert_question(q)
         return self
