@@ -25,11 +25,12 @@ TEST2 = {
 TEST3 = {
     'vocab_file': os.path.join(BASE_DIR, '../data/vocab_mecab+khaiii_noBPE_5888'),
     'max_seq_length': 128,
-    'max_query_length': 64,
+    'max_query_length': 128,
     'model_path': os.path.join(BASE_DIR, '../data/output_dir/model.ckpt-100000'),
     'bert_json': os.path.join(BASE_DIR, '../data/bert_config.json'),
     'categories': ['셔틀', '밥', '잡담', '학사행정', '검색'],
-    'feature_layers': -1
+    'feature_layers': -1,
+    'distance': 'manhattan' # euclidean, manhattan
 }
 
 DEFAULT_CONFIG = TEST3

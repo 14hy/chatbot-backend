@@ -67,6 +67,8 @@ class Categorizer():
         self.preprocessor = PreProcessor()
         self.bert_model = Model()
 
+        self.DEFAULT_CONFIG = config.DEFAULT_CONFIG
+
     def categorize(self, query):
         '''
         유사도분석을 통해서 카테고리화 한다.
@@ -93,7 +95,14 @@ class Categorizer():
         # print('*' * 50)
         measure = 'manhattan'
         for question in question_list:
-            distance = manhattan_distance(query.feature_vector, question.feature_vector)
+            a = query.feature_vector
+            b = question.feature_vector
+            if self.DEFAULT_CONFIG['distance'] == 'manhattan':
+                distance = manhattan_distance(a, b)
+            elif self.DEFAULT_CONFIG['distance'] == 'euclidean':
+                distance = euclidean_distance(a, b)
+            else:
+                raise Exception('DEFAUL_CONFIG - distance must be ["euclidean", "manhattan"]')
             distance_dict[question.text] = distance
         # print('*' * 50)
         # for question in question_list: # 유클리드 거리
