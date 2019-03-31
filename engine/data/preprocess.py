@@ -1,5 +1,5 @@
 import config
-from engine.tokenization import FullTokenizer
+from engine.bert.mytokenization import FullTokenizer
 from engine.utils import Singleton
 
 
@@ -17,7 +17,6 @@ def load_vocab_as_list(vocab_file):
 
 def convert_by_vocab(vocab, items):
     '''
-
     :param vocab:
     :param items:
     :return:
@@ -48,7 +47,7 @@ class PreProcessor(metaclass=Singleton):
 
         self.DEFAULT_CONFIG = config.DEFAULT_CONFIG
 
-        self.tokenizer = FullTokenizer(self.DEFAULT_CONFIG['vocab_file'])
+        self.tokenizer = FullTokenizer(self.DEFAULT_CONFIG['vocab_file'], use_mecab=True, use_khaiii=True)
         self.vocab = load_vocab_as_list(self.DEFAULT_CONFIG['vocab_file'])
 
 
@@ -114,7 +113,7 @@ class PreProcessor(metaclass=Singleton):
         segment_ids.append(0)
 
         if context is not None:
-            doc_tokens = self.tokenizer.tokenize_to_doc_tokens(context)
+            doc_tokens = self.tokenizer.tokenize_to_doc_tokens(context) # TODO squad 기능 재구현시, mytokenization에 기존 tokenization보고 구현 할 것
 
             for i, token in enumerate(doc_tokens):
                 original_to_token_index.append(i)

@@ -14,14 +14,14 @@ class Engine(object):
         self.vocab = None
         self.model = Model()
         self.chat_handler = ChatHandler()
-
-        self.test_mode()
-        self.preprocessor = PreProcessor()
-        input_feature = self.preprocessor.create_InputFeature(self.question,
-                                                              self.context)
-        start, end = self.model.predict(input_feature)  # warm up.
-
-        self.answer = self.preprocessor.pred_to_text(start, end, input_feature)
+        #
+        # self.test_mode()
+        # self.preprocessor = PreProcessor()
+        # input_feature = self.preprocessor.create_InputFeature(self.question,
+        #                                                       self.context)
+        # start, end = self.model.predict(input_feature)  # warm up.
+        #
+        # self.answer = self.preprocessor.pred_to_text(start, end, input_feature)
     def test_mode(self):
         self.question = '오리아나가 사고를 당해 하게 된 일은?'
         self.context = '오리아나는 한 때 살아있는 육신을 가진 호기심 많은 소녀였지만, ' \
