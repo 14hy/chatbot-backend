@@ -37,6 +37,17 @@ class PymongoWrapper(metaclass=Singleton):
 
         return self._questions.insert_one(document).inserted_id
 
+
+
+    def remove_all_questions(self):
+        '''questions collection의 모든 데이터를 삭제'''
+        list = self.get_question_list()
+
+        for each in list:
+            _id = each.object_id
+            print(_id)
+            self._questions.delete_one({'_id': _id})
+        return self
     def get_question_list(self):
         '''
 
