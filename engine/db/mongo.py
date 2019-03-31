@@ -3,7 +3,7 @@ import pickle
 from pymongo import MongoClient
 
 import config
-from engine.data.question import Question
+from engine.data.question import Question, QuestionMaker
 from engine.utils import Singleton
 
 
@@ -15,6 +15,7 @@ class PymongoWrapper(metaclass=Singleton):
         _client = MongoClient(self.MONGODB_CONFIG['local_ip'], self.MONGODB_CONFIG['port'])
         self._db = _client[self.MONGODB_CONFIG['db_name']]
         self._questions = self._db[self.MONGODB_CONFIG['col_question']]
+        self._question_maker = QuestionMaker()
 
     def insert_question(self, question):
         '''
@@ -37,8 +38,17 @@ class PymongoWrapper(metaclass=Singleton):
 
         return self._questions.insert_one(document).inserted_id
 
-
-
+    def read_from_FAQtxt(self, txt):
+        '''텍스트 파일로 부터 데이터를 읽어서 데이터 베이스에 저장,
+        질문|||답변|||카테고리
+        형식으로 저장
+        '''
+        with open(txt, mode='r', encoding='utf8') as f:
+            for line in f:
+                tokens = line.split('|||')
+                q = self._question_maker.create_question(tokens[0], tokens[2], tokens[1])
+                self.insert_question(q)
+        return self
     def remove_all_questions(self):
         '''questions collection의 모든 데이터를 삭제'''
         list = self.get_question_list()
