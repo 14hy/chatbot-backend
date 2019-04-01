@@ -38,7 +38,7 @@ class PymongoWrapper(metaclass=Singleton):
 
         return self._questions.insert_one(document).inserted_id
 
-    def read_from_FAQtxt(self, txt):
+    def read_from_FAQtxt(self, txt='../data/faq.txt'):
         '''텍스트 파일로 부터 데이터를 읽어서 데이터 베이스에 저장,
         질문|||답변|||카테고리
         형식으로 저장
