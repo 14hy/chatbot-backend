@@ -35,7 +35,8 @@ class InputFeatures(object):
         self.input_ids = input_ids
         self.input_mask = input_mask
         self.segment_ids = segment_ids
-    def show(self):
+
+    def __str__(self):
         print('input_ids:', self.input_ids)
         print('input_mask:', self.input_mask)
         print('segment_ids:', self.segment_ids)
@@ -47,9 +48,8 @@ class PreProcessor(metaclass=Singleton):
 
         self.DEFAULT_CONFIG = config.DEFAULT_CONFIG
 
-        self.tokenizer = FullTokenizer(self.DEFAULT_CONFIG['vocab_file'], use_mecab=True, use_khaiii=True)
+        self.tokenizer = FullTokenizer(self.DEFAULT_CONFIG['vocab_file'], use_morphs=True)
         self.vocab = load_vocab_as_list(self.DEFAULT_CONFIG['vocab_file'])
-
 
     def str_to_tokens(self, text):
         '''
@@ -58,6 +58,9 @@ class PreProcessor(metaclass=Singleton):
         :return: list[str] tokenized wordpieces
         '''
         return self.tokenizer.tokenize(text)
+
+    def get_keywords(self, text):
+        return self.tokenizer.get_keywords(text)
 
     def tokens_to_idx(self, tokens):
         '''
@@ -73,10 +76,9 @@ class PreProcessor(metaclass=Singleton):
     def create_InputFeature(self, query_text, context=None):
         '''
 
-        :param query_text:
-        :param context:
-        :param params:
-        :return:
+        :param query_text: str, 질문
+        :param context: str, Squad일 때 사용
+        :return: InputFeatures object
 
         context is not None:
         input_ids: [CLS] query_text [SEP] context [SEP] [PAD] ...
@@ -91,12 +93,12 @@ class PreProcessor(metaclass=Singleton):
         max_query_length = self.DEFAULT_CONFIG['max_query_length']
         max_seq_length = self.DEFAULT_CONFIG['max_seq_length']
 
-
         token_to_original_index = []
         original_to_token_index = []
         all_doc_tokens = []
 
         query_tokens = self.str_to_tokens(query_text)
+        print('TOKENIZED TEXT: ',query_tokens)
         if len(query_tokens) > max_query_length:
             query_tokens = query_tokens[0:max_query_length]
 
@@ -113,7 +115,8 @@ class PreProcessor(metaclass=Singleton):
         segment_ids.append(0)
 
         if context is not None:
-            doc_tokens = self.tokenizer.tokenize_to_doc_tokens(context) # TODO squad 기능 재구현시, mytokenization에 기존 tokenization보고 구현 할 것
+            doc_tokens = self.tokenizer.tokenize_to_doc_tokens(context)
+            # TODO squad 기능 재구현시, mytokenization에 기존 tokenization보고 구현 할 것
 
             for i, token in enumerate(doc_tokens):
                 original_to_token_index.append(i)

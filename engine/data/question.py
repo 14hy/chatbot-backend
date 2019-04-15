@@ -3,20 +3,22 @@ from engine.data.preprocess import PreProcessor
 from engine.model.bert import Model
 
 class Question(object):
-    def __init__(self, text, category, answer, feature_vector, morphs, object_id=None):
+    def __init__(self, text, category, answer, feature_vector,
+                 keyword_1, keyword_2=None, keyword_3=None, object_id=None):
         '''
 
-        :param text: original question text
-        :param category:
-        :param answer:
-        :param feature_vector:
-        :param morphs: KhaiiiWord object
+        :param text: str, 질문
+        :param category: str, config에서 정의된 카테고리 이여야 함
+        :param answer: str/ None, 없어도 됨
+        :param feature_vector: [784] Feature vector
         '''
+        self.keyword_3 = keyword_3
+        self.keyword_1 = keyword_1
+        self.keyword_2 = keyword_2
         self.object_id = object_id
         self.category = category
         self.answer = answer
         self.text = text
-        self.morphs = morphs
         self.feature_vector = feature_vector
 
 class QuestionMaker(object):
@@ -28,7 +30,7 @@ class QuestionMaker(object):
 
         self.bert_model = Model()
 
-    def create_question(self, text, category, answer=None):
+    def create_question(self, text, category=None, answer=None):
         '''
 
         :param text: 질문
@@ -38,17 +40,16 @@ class QuestionMaker(object):
         '''
         categories = self.DEFAULT_CONFIG['categories']
 
-        if category not in categories:
-            raise Exception('category must be ', categories)
+        # if category not in categories: # TODO 기능이 구체화 되면 다시 사용
+        #     raise Exception('category must be ', categories)
 
         input_feature = self.preprocessor.create_InputFeature(text)
+        keywords = self.preprocessor.get_keywords(text)
         feature_vector = self.bert_model.extract_feature_vector(input_feature, layers=-1)
 
-        morphs = None
+        return Question(text, category, answer, feature_vector,
+                        keywords[0], keywords[1], keywords[2])
 
-        return Question(text, category, answer, feature_vector, morphs)
 
 if __name__ == '__main__':
     qm = QuestionMaker()
-    print(qm.create_question('안녕하세요, 테스트 입니다!', '셔틀', answer='넵.').feature_vector)
-    print(qm.create_question('안녕하세요, 테스트 입니다!', '셔틀', answer='넵.').feature_vector.shape)
