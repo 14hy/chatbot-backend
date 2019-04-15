@@ -70,8 +70,8 @@ class Engine(object):
         # TODO Query Feature extractor.
         query = self.chat_handler.create_query_from_chat(chat)
 
-
-        answer = query.answer
+        # answer = query.answer
+        answer = 'testing' # TODO
         toc = time()
         print('*** 생성된 답변 ***\n', answer)
         print('*** 소모 시간: {}'.format(toc-tic))

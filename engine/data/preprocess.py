@@ -37,9 +37,7 @@ class InputFeatures(object):
         self.segment_ids = segment_ids
 
     def __str__(self):
-        print('input_ids:', self.input_ids)
-        print('input_mask:', self.input_mask)
-        print('segment_ids:', self.segment_ids)
+        return 'InputFeature\n input_ids:{}\n input_mask:{}\n segement_ids:{}'.format(self.input_ids, self.input_mask, self.segment_ids)
 
 
 class PreProcessor(metaclass=Singleton):

@@ -40,11 +40,11 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'rest_framework_swagger',
-    'restapi'
+    'server'
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
+    'django.middleware.secur˚ity.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

@@ -6,21 +6,25 @@ from rest_framework.parsers import JSONParser
 import json
 
 from engine.main import Engine
-from restapi.models import Member
-# from restapi.api import MemberSerializer
+from server.models import Member
+
+# from server.api import MemberSerializer
 
 # Create your views here.
 
 engine = Engine()
 
+
 @csrf_exempt
 def test_REST(request):
     if request.method == 'GET':
-        # restapi = Member.objects.all()
-        chat = request.GET['chat']
-        # serializer = MemberSerializer(restapi, many=True)\
+        # server = Member.objects.all()
+        query_params = request.query_params.get('chat')
+        print(query_params)
+        return
+        # serializer = MemberSerializer(server, many=True)\
         return HttpResponse(json.dumps(engine.chat_to_answer(chat),
-                                        ensure_ascii=False), content_type="application/json; charset=utf-8")
+                                       ensure_ascii=False), content_type="application/json; charset=utf-8")
 
     elif request.method == 'POST':
         data = JSONParser().parse(request)

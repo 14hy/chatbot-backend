@@ -14,12 +14,17 @@ from engine.utils import Singleton
 DEFAULT_CONFIG = config.DEFAULT_CONFIG
 
 
-class Query(object):
-    def __init__(self, chat):
-        self.answer = None
+class Query(object):  # TODO 어떤 정보가 필요 할 지 계속 고민 해보기
+    def __init__(self, chat, feature_vector, keywords, matched_question, distance):
         self.chat = chat
-        self.category = None
-        self.feature_vector = None
+        self.feature_vector = feature_vector
+        self.keywords = keywords
+        self.matched_question = matched_question  # 어떤 질문과 매칭 되었었는지.
+        self.distance = distance  # 거리는 어떠 하였는 지
+
+    def __str__(self):
+        return 'Query chat:%5s, keywords%10s, question:%5s, distance:%5.3f' \
+               % (self.chat, self.keywords, self.matched_question.text, self.distance)
 
 
 def cosine_similarity(a, b):
@@ -56,10 +61,7 @@ def euclidean_distance(a, b):
     return 1 + np.linalg.norm(np.sqrt(np.dot((a - b), (a - b))))
 
 
-class Categorizer():
-    '''
-
-    '''
+class QueryMaker():
 
     def __init__(self):
         self.pymongo_wrapper = PymongoWrapper()
@@ -69,70 +71,56 @@ class Categorizer():
 
         self.DEFAULT_CONFIG = config.DEFAULT_CONFIG
 
-    def categorize(self, query):
+    def get_keywords(self, text):
+        return self.preprocessor.get_keywords(text)
+
+    def get_feature_vector(self, text):
+        input_feature = self.preprocessor.create_InputFeature(text)
+        return self.bert_model.extract_feature_vector(input_feature,
+                                                      DEFAULT_CONFIG['feature_layers'])
+
+    def match_query_with_question(self, chat, feature_vector, keywords):
         '''
-        유사도분석을 통해서 카테고리화 한다.
-        :param query:
+        :param chat:
+        :param feature_vector:
+        :param keywords:
         :return:
-
-        사전에 준비 된 질문과의 유사도를 비교
-        비효율적이고 계산이 비싸기 때문에 충분한 데이터가 쌓이면
-        classification model을 만들어서 대체하기
-        혹은 사용자에게 1차 분류를 시킴으로써 계산량 감소 가능
-        혹은 비슷한 질문을 클러스터링하여 n -> m개로 줄이기
         '''
+        assert feature_vector is not None
 
-        question_list = self.pymongo_wrapper.get_question_list()
-
-        input_feature = self.preprocessor.create_InputFeature(query.chat)
-        feature_vector = self.bert_model.extract_feature_vector(input_feature,
-                                                                DEFAULT_CONFIG['feature_layers'])
-        query.feature_vector = feature_vector
-
+        question_list = self.pymongo_wrapper.get_questions_by_keywords(keywords=keywords)
+        if question_list == []: # 걸리는 키워드가 없는 경우 모두 다 비교
+            question_list = self.pymongo_wrapper.get_question_list()
         distance_dict = {}
 
-        print('***주어진 query, "{}" 와의 거리 비교 테스트***'.format(query.chat))
+        print('***주어진 query, "{}" 와의 거리 비교 테스트***'.format(chat))
         # print('*' * 50)
-        measure = 'manhattan'
         for question in question_list:
-            a = query.feature_vector
+            a = feature_vector
             b = question.feature_vector
             if self.DEFAULT_CONFIG['distance'] == 'manhattan':
                 distance = manhattan_distance(a, b)
             elif self.DEFAULT_CONFIG['distance'] == 'euclidean':
                 distance = euclidean_distance(a, b)
             else:
-                raise Exception('DEFAUL_CONFIG - distance must be ["euclidean", "manhattan"]')
+                raise Exception('DEFAUL_CONFIG - distance 는 "euclidean", "manhattan" 둘중 하나 여야 합니다.')
             distance_dict[question.text] = distance
-        # print('*' * 50)
-        # for question in question_list: # 유클리드 거리
-        #     distance = euclidean_distance(query.feature_vector, question.feature_vector)
-        #     distance_dict[question.text] = distance
 
         distance_dict = OrderedDict(sorted(distance_dict.items(), key=lambda t: t[1]))
 
-        item = list(distance_dict.items())[0][0]
-
-        top_1 = self.pymongo_wrapper.get_question_by_text(item)
-
-        query.answer = top_1.answer
-        query.category = top_1.category
-
+        # LOGGING
         print('*' * 50)
         i = 0
         for item, distance in distance_dict.items():
             print(i, 'th item: ', item, '/ distance: ', distance)
             i += 1
 
-        # Top1과 매칭
+        # output
+        item = list(distance_dict.items())[0][0]
+        distance = list(distance_dict.items())[0][1]
+        matched_question = self.pymongo_wrapper.get_question_by_text(item)
 
-
-
-        # 4. 자카드 유사도 # TODO
-
-        # 추출한 피쳐를 바탕으로 카테고리 추출
-
-        return query
+        return matched_question, distance
 
 
 class ChatHandler(metaclass=Singleton):
@@ -141,23 +129,29 @@ class ChatHandler(metaclass=Singleton):
     '''
 
     def __init__(self):
-        self.categorizer = Categorizer()
-        pass
+        self.query_maker = QueryMaker()
 
     def create_query_from_chat(self, chat):
         '''
         :param chat: str
         :return: Query object
         '''
-        query = Query(chat)
+        keywords = self.query_maker.get_keywords(chat)
+        feature_vector = self.query_maker.get_feature_vector(chat)
+        matched_question, distance = self.query_maker.match_query_with_question(chat,
+                                                                                feature_vector,
+                                                                                keywords)
 
-        return self.categorizer.categorize(query)
+        query = Query(chat, feature_vector, keywords, matched_question, distance)
+        return query
 
 
 if __name__ == '__main__':
     ch = ChatHandler()
-    ch.create_query_from_chat('점심뭐먹을까?')
-    ch.create_query_from_chat('셔틀 버스 언제 오나요?')
-    ch.create_query_from_chat('밥주세용밥?')
-    ch.create_query_from_chat('오늘 점심을 어디 가서 먹을 지 추천 해 주세요')
-    ch.create_query_from_chat('강의평가')
+    print(ch.create_query_from_chat('셔틀 버스 언제 오나요?'))
+    print(ch.create_query_from_chat('식당 메뉴 추천 해주세요'))
+    print(ch.create_query_from_chat('점심 메뉴 추천'))
+    print(ch.create_query_from_chat('학생 식당 메뉴는 무엇 입니까?'))
+    print(ch.create_query_from_chat('학생 식당 메뉴 알려줘.'))
+    print(ch.create_query_from_chat('강의평가를 어떻게 하냐?????.'))
+    print(ch.create_query_from_chat('강의평가를 어떻게 해요?'))

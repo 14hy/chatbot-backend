@@ -13,9 +13,7 @@ def _convert_to_question(document):
                         document['category'],
                         document['answer'],
                         feature_vector,
-                        document['keyword_1'],
-                        document['keyword_2'],
-                        document['keyword_3'])
+                        document['keywords'])
     return question
 
 
@@ -44,9 +42,7 @@ class PymongoWrapper(metaclass=Singleton):
                     'answer': question.answer,
                     'feature_vector': feature_vector,
                     'category': question.category,
-                    'keyword_1': question.keyword_1,
-                    'keyword_2': question.keyword_2,
-                    'keyword_3': question.keyword_3}
+                    'keywords': question.keywords}
 
         return self._questions.insert_one(document).inserted_id
 
@@ -102,6 +98,22 @@ class PymongoWrapper(metaclass=Singleton):
         '''
         document = self._questions.find_one({'text': text})
         return _convert_to_question(document)
+
+    def get_questions_by_keywords(self, keywords):
+        '''
+
+        :param keywords: list, keywords
+        :return: list, of Question object
+        '''
+        output = []
+
+        cursor = self._questions.find({'keywords': {'$in': keywords}})
+
+        for document in cursor:
+            question = _convert_to_question(document)
+            question.object_id = document['_id']
+            output.append(question)
+        return output
 
     def get_questions_by_category(self, category):
         '''
