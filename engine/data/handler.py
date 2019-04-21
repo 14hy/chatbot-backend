@@ -7,24 +7,12 @@ import numpy as np
 
 import config
 from engine.data.preprocess import PreProcessor
+from engine.data.query import Query
 from engine.db.mongo import PymongoWrapper
 from engine.model.bert import Model
 from engine.utils import Singleton
 
 DEFAULT_CONFIG = config.DEFAULT_CONFIG
-
-
-class Query(object):  # TODO 어떤 정보가 필요 할 지 계속 고민 해보기
-    def __init__(self, chat, feature_vector, keywords, matched_question, distance):
-        self.chat = chat
-        self.feature_vector = feature_vector
-        self.keywords = keywords
-        self.matched_question = matched_question  # 어떤 질문과 매칭 되었었는지.
-        self.distance = distance  # 거리는 어떠 하였는 지
-
-    def __str__(self):
-        return 'Query chat:%5s, keywords%10s, question:%5s, distance:%5.3f' \
-               % (self.chat, self.keywords, self.matched_question.text, self.distance)
 
 
 def cosine_similarity(a, b):
@@ -76,8 +64,7 @@ class QueryMaker():
 
     def get_feature_vector(self, text):
         input_feature = self.preprocessor.create_InputFeature(text)
-        return self.bert_model.extract_feature_vector(input_feature,
-                                                      DEFAULT_CONFIG['feature_layers'])
+        return self.bert_model.extract_feature_vector(input_feature)
 
     def match_query_with_question(self, chat, feature_vector, keywords):
         '''
@@ -130,8 +117,9 @@ class ChatHandler(metaclass=Singleton):
 
     def __init__(self):
         self.query_maker = QueryMaker()
+        self.pymongo_wrapper = PymongoWrapper()
 
-    def create_query_from_chat(self, chat):
+    def handle_chat(self, chat):
         '''
         :param chat: str
         :return: Query object
@@ -143,15 +131,37 @@ class ChatHandler(metaclass=Singleton):
                                                                                 keywords)
 
         query = Query(chat, feature_vector, keywords, matched_question, distance)
+        self.pymongo_wrapper.insert_query(query)
         return query
 
 
 if __name__ == '__main__':
     ch = ChatHandler()
-    print(ch.create_query_from_chat('셔틀 버스 언제 오나요?'))
-    print(ch.create_query_from_chat('식당 메뉴 추천 해주세요'))
-    print(ch.create_query_from_chat('점심 메뉴 추천'))
-    print(ch.create_query_from_chat('학생 식당 메뉴는 무엇 입니까?'))
-    print(ch.create_query_from_chat('학생 식당 메뉴 알려줘.'))
-    print(ch.create_query_from_chat('강의평가를 어떻게 하냐?????.'))
-    print(ch.create_query_from_chat('강의평가를 어떻게 해요?'))
+    # print(ch.handle_chat('how to do 강의평가'))
+    # print(ch.handle_chat('the way to do 강의 평가'))
+    # print(ch.handle_chat('강의 평가?'))
+    # print(ch.handle_chat('운행 중인 버스가 있나요?'))
+    # print(ch.handle_chat('아침에 셔틀 버스가 오나요?'))
+    # print(ch.handle_chat('셔틀은버스이고셔틀과버스이니셔틀버스이다'))
+    # print(ch.handle_chat('라비앙로즈'))
+    print(ch.handle_chat('식당 메뉴 추천 해주세요'))
+    print(ch.handle_chat('점심 메뉴 추천'))
+    print(ch.handle_chat('학생 식당 메뉴는 무엇 입니까?'))
+    print(ch.handle_chat('학생 식당 메뉴 알려줘.'))
+    print(ch.handle_chat('강의평가를 어떻게 하냐?????.'))
+    print(ch.handle_chat('강의평가를 어떻게 해요?'))
+    print(ch.handle_chat(''))
+    print(ch.handle_chat('강의 평가 하고 싶지 않다.'))
+    print(ch.handle_chat('강의평가가 하고 싶지 않아요.'))
+    print(ch.handle_chat('강의평가가 뭐냐?'))
+    print(ch.handle_chat('강의평가는 뭐뭐 해야 되?'))
+    print(ch.handle_chat('셔틀 버스 언제 오나요?'))
+    print(ch.handle_chat('밤에 버스 오나요?'))
+    print(ch.handle_chat('밤에 버스 가나요?'))
+    print(ch.handle_chat('아침에 버스 언제 와요?'))
+    print(ch.handle_chat('셔틀 시간표 알려주세요.'))
+    print(ch.handle_chat('셔틀 시간표 알고 싶지 않아요.'))
+    print(ch.handle_chat('셔틀 언제 가요?'))
+    # print(ch.create_query_from_chat('셔틀 버스 언제 오나요?'))
+    # print(ch.create_query_from_chat('셔틀 버스 언제 오나요?'))
+    # print(ch.create_query_from_chat('셔틀 버스 언제 오나요?'))

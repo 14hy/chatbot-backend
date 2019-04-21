@@ -44,7 +44,7 @@ class QuestionMaker(object):
 
         input_feature = self.preprocessor.create_InputFeature(text)
         keywords = self.preprocessor.get_keywords(text)
-        feature_vector = self.bert_model.extract_feature_vector(input_feature, layers=-1)
+        feature_vector = self.bert_model.extract_feature_vector(input_feature)
 
         return Question(text, category, answer, feature_vector, keywords)
 
