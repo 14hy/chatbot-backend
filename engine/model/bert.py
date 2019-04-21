@@ -92,7 +92,7 @@ class BertConfig(object):
     def read_from_json_file(self, json_file):
         with open(json_file, mode='r') as file:
             config = json.load(file)
-            print('---bert conf loaded from json---')
+            print('*** BERT CONFIGURATION JSON ***')
         self.vocab_size = config['vocab_size']
         self.hidden_size = config['hidden_size']
         self.num_hidden_layers = config['num_hidden_layers']
@@ -587,6 +587,8 @@ class Model(metaclass=Singleton):
         # feature vectors
         self.all_encoder_layers = None
         self.pooled_output = None
+        self.feature_vector = None
+        self.sequence_output = None
 
         self.build_model()
 
@@ -609,7 +611,7 @@ class Model(metaclass=Singleton):
         embedding_output = None  # sum of Token, segment, position
         embedding_table = None  # id embedding table
         self.all_encoder_layers = None  # transformer model
-        sequence_output = None  # output layer
+        self.sequence_output = None  # output layer
 
         with tf.variable_scope(name_or_scope=None, default_name='bert'):
             with tf.variable_scope(name_or_scope='embeddings'):
@@ -642,17 +644,17 @@ class Model(metaclass=Singleton):
                                                       initializer_range=bert_config.initializer_range,
                                                       do_return_all_layers=True)
 
-                sequence_output = self.all_encoder_layers[-1]
+                self.sequence_output = self.all_encoder_layers[self.DEFAULT_CONFIG['feature_layers']]
 
             with tf.variable_scope('pooler'):
-                first_token_tensor = tf.squeeze(sequence_output[:, 0:1, :], axis=1)
+                first_token_tensor = tf.squeeze(self.sequence_output[:, 0:1, :], axis=1)
                 self.pooled_output = tf.layers.dense(inputs=first_token_tensor,
                                                 units=bert_config.hidden_size,
                                                 activation=tf.nn.tanh,
                                                 kernel_initializer=tf.truncated_normal_initializer(
                                                     bert_config.initializer_range))
 
-        final_layer = sequence_output
+        final_layer = self.sequence_output
 
         output_weights = tf.get_variable('cls/squad/output_weights',
                                          shape=[2, bert_config.hidden_size],
@@ -707,19 +709,20 @@ class Model(metaclass=Singleton):
 
         return start, end
 
-    def extract_feature_vector(self, feature, layers=-1):
+    def extract_feature_vector(self, input_feature):
         '''
 
-        :param feature: InputFeature
+        :param input_feature: InputFeature
         :param layers: -1, -2, -3...
         -1 = Transformer의 마지막 레이어,
         :return:
         '''
         tic = time.time()
-        feed_dict = {self.input_ids: np.array(feature.input_ids).reshape((1, -1)),
-                     self.input_masks: np.array(feature.input_mask).reshape(1, -1),
-                     self.segment_ids: np.array(feature.segment_ids).reshape(1, -1)}
-        feature_vectors = self.sess.run(self.pooled_output, feed_dict)
+        feed_dict = {self.input_ids: np.array(input_feature.input_ids).reshape((1, -1)),
+                     self.input_masks: np.array(input_feature.input_mask).reshape(1, -1),
+                     self.segment_ids: np.array(input_feature.segment_ids).reshape(1, -1)}
+        sequence_output = self.sess.run(self.sequence_output, feed_dict)
+        feature_vector = np.mean(sequence_output, axis=1)
         toc = time.time()
-        print('***extracting feature...time:{}***'.format(toc-tic))
-        return np.reshape(feature_vectors, newshape=(-1))
+        print('*** 문장 벡터화 완료 시간: %5.3f***' % (toc-tic))
+        return np.reshape(feature_vector, newshape=(-1))

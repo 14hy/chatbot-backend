@@ -68,7 +68,7 @@ class Engine(object):
         tic = time()
 
         # TODO Query Feature extractor.
-        query = self.chat_handler.create_query_from_chat(chat)
+        query = self.chat_handler.handle_chat(chat)
 
         # answer = query.answer
         answer = 'testing' # TODO
@@ -90,4 +90,4 @@ class Engine(object):
 
 if __name__ == '__main__':
     main = Engine()
-    main.test('오리아나가 사고를 당해 하게 된 일은?')
+    print('ENGINE MAIN')
