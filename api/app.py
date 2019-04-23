@@ -7,5 +7,5 @@ from api.resources.chatbot import CategorizeChat, Manager, answer
 
 
 if __name__ == '__main__':
-    app.run(port=4001, debug=True)
+    app.run(host='0.0.0.0', port=8800, debug=True)
 

@@ -8,10 +8,6 @@ from engine.data.question import Question, QuestionMaker
 from engine.utils import Singleton
 
 
-
-
-
-
 class PymongoWrapper(metaclass=Singleton):
     def __init__(self):
 
@@ -35,7 +31,7 @@ class PymongoWrapper(metaclass=Singleton):
 
     def _convert_to_query(self, document):
         feature_vector = pickle.loads(np.array(document['feature_vector']))
-        matched_question = self.get_question_by_id(document['matched_question'])
+        matched_question = self.get_question_by_text(document['matched_question'])
         query = Query(document['chat'], feature_vector, document['keywords'],
                       matched_question, document['distance'])
         return query
@@ -163,7 +159,7 @@ class PymongoWrapper(metaclass=Singleton):
             'chat': query.chat,
             'feature_vector': feature_vector,
             'keywords': query.keywords,
-            'matched_question': query.matched_question.object_id,
+            'matched_question': query.matched_question.text,
             # 저장은 object id로 하지만 query 객체는 question 객체 이므로 헷갈리지 말 것
             'distance': query.distance
         }
