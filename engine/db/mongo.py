@@ -1,5 +1,6 @@
-import numpy as np
 import pickle
+
+import numpy as np
 from pymongo import MongoClient
 
 import config
@@ -58,7 +59,8 @@ class PymongoWrapper(metaclass=Singleton):
                     'category': question.category,
                     'keywords': question.keywords}
 
-        return self._questions.update_one({'text': document['text']}, {'$set': document}, upsert=True) # update_one -> 중복 삽입을 막기 위해
+        return self._questions.update_one({'text': document['text']}, {'$set': document},
+                                          upsert=True)  # update_one -> 중복 삽입을 막기 위해
 
     def read_from_txt(self, txt='../data/faq.txt'):
         '''텍스트 파일로 부터 질문을 읽어서 데이터 베이스에 저장,
@@ -67,8 +69,9 @@ class PymongoWrapper(metaclass=Singleton):
         '''
         with open(txt, mode='r', encoding='utf8') as f:
             for line in f:
-                tokens = line.strip('\n')
-                q = self._question_maker.create_question(tokens)
+                tokens = line.strip('\n').split('|')
+                print(tokens)
+                q = self._question_maker.create_question(tokens[0], answer=tokens[1], category=tokens[2])
                 self.insert_question(q)
         return self
 
@@ -176,6 +179,7 @@ class PymongoWrapper(metaclass=Singleton):
 
     def remove_all_queries(self):
         pass
+
 
 if __name__ == '__main__':
     pw = PymongoWrapper()

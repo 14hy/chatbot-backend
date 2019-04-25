@@ -1,5 +1,6 @@
 from flask_restplus import Resource
 from flask_restplus import reqparse, fields
+
 from api.common.settings import *
 from engine.db.mongo import PymongoWrapper
 from engine.main import Engine
@@ -7,17 +8,19 @@ from engine.main import Engine
 backend = Engine()
 pw = PymongoWrapper()
 
-answer = ns.model('question', {
+answer = v1.model('question', {
     'answer': fields.String(readOnly=True, description='답변'),
     'category': fields.String(required=False, description='카테고리')
 })
 
 
-@ns.route('/service')
+# @v1.marshal_list_with(answer)
+
+
+@v1.route('/chat')
 class CategorizeChat(Resource):
 
-    @ns.doc(params={'chat': 'A chat'})
-    @ns.marshal_list_with(answer)
+    @v1.doc(params={'chat': 'A chat'})
     def post(self):
         try:
             parser = reqparse.RequestParser()
@@ -26,15 +29,17 @@ class CategorizeChat(Resource):
 
             _chat = args['chat']
             _answer = backend.chat_to_answer(_chat)
-            return {'answer': 'hello?'}
+            print('*** answer ***')
+            print(_answer)
+            return _answer
         except Exception as err:
             return {'error': err}
 
 
-@ns.route('/manage/add_question')
+@v1.route('/db/add_question')
 class Manager(Resource):
 
-    @ns.doc('질문 추가', params={'text': '등록 할 질문', 'answer': '등록 할 답변(default=None)'})
+    @v1.doc('질문 추가', params={'text': '등록 할 질문', 'answer': '등록 할 답변(default=None)'})
     def post(self):
         try:
             parser = reqparse.RequestParser()
