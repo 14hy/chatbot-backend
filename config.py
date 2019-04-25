@@ -2,27 +2,7 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-TEST1 = {
-    'vocab_file': os.path.join(BASE_DIR, 'ckpt/fine_tuned/vocab.txt'),
-    'max_seq_length': 384,
-    'max_query_length': 64,
-    'bert_json': os.path.join(BASE_DIR, 'ckpt/fine_tuned/bert_config.json'),
-    'model_path': os.path.join(BASE_DIR, 'ckpt/fine_tuned/model.ckpt-30203'),
-    'categories': ['셔틀', '밥', '잡담', '학사행정', '검색'],
-    'feature_layers': -2
-}
-
-TEST2 = {
-    'vocab_file': os.path.join(BASE_DIR, 'ckpt/pre_trained/vocab.txt'),
-    'max_seq_length': 384,
-    'max_query_length': 64,
-    'model_path': os.path.join(BASE_DIR, 'ckpt/pre_trained/bert_model.ckpt'),
-    'bert_json': os.path.join(BASE_DIR, 'ckpt/pre_trained/bert_config.json'),
-    'categories': ['셔틀', '밥', '잡담', '학사행정', '검색'],
-    'feature_layers': -1
-}
-
-TEST3 = {
+TEST = {
     'vocab_file': os.path.join(BASE_DIR, '../data/vocab_mecab+khaiii_noBPE_5888'),
     'max_seq_length': 25,
     'max_query_length': 25,
@@ -30,9 +10,31 @@ TEST3 = {
     'bert_json': os.path.join(BASE_DIR, '../data/bert_config.json'),
     'categories': ['셔틀', '밥', '잡담', '학사행정', '검색'],
     'feature_layers': -2,
-    'distance': 'manhattan' # euclidean, manhattan
+    'distance': 'manhattan', # euclidean, manhattan
+    'use_morphs': True
 }
-
+# TEST = {
+#     'vocab_file': os.path.join(BASE_DIR, '../data/google_model/vocab.txt'),
+#     'max_seq_length': 25,
+#     'max_query_length': 25,
+#     'model_path': os.path.join(BASE_DIR, '../data/google_model/bert_model.ckpt'),
+#     'bert_json': os.path.join(BASE_DIR, '../data/google_model/bert_config.json'),
+#     'categories': ['셔틀', '밥', '잡담', '학사행정', '검색'],
+#     'feature_layers': -2,
+#     'distance': 'manhattan', # euclidean, manhattan
+#     'use_morphs': False
+# }
+# TEST = {
+#     'vocab_file': os.path.join(BASE_DIR, '../data/google_squad/vocab.txt'),
+#     'max_seq_length': 25,
+#     'max_query_length': 25,
+#     'model_path': os.path.join(BASE_DIR, '../data/google_squad/model.ckpt-30203'),
+#     'bert_json': os.path.join(BASE_DIR, '../data/google_squad/bert_config.json'),
+#     'categories': ['셔틀', '밥', '잡담', '학사행정', '검색'],
+#     'feature_layers': -2,
+#     'distance': 'manhattan', # euclidean, manhattan
+#     'use_morphs': False
+# }
 # TEST4 = {
 #     'vocab_file': os.path.join(BASE_DIR, '../data/vocab_mecab+khaiii_noBPE_5888'),
 #     'max_seq_length': 128,
@@ -44,7 +46,7 @@ TEST3 = {
 #     'distance': 'manhattan' # euclidean, manhattan
 # }
 
-DEFAULT_CONFIG = TEST3
+DEFAULT_CONFIG = TEST
 
 MONGODB_CONFIG = {
 

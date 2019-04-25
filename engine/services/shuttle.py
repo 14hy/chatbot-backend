@@ -1,6 +1,7 @@
 import enum
 from datetime import time, datetime, timedelta
-
+from pytz import timezone
+import pprint
 
 class Table(enum.Enum):
     # 0: 학기 중, 1: 계절학기, 2: 방학 중
@@ -18,7 +19,7 @@ class Table(enum.Enum):
     방학_휴일_순환노선 = [[3, 4, 4]]  # 2,1,0
 
 
-class TimeTable(object):
+class ShuttleBus(object):
     """
     # 정류장의 종류
     1. 창의인재원
@@ -43,23 +44,23 @@ class TimeTable(object):
 
     def __init__(self):
         pass
-        self.start_time = [self.create_delta(50, 7), self.create_delta(0, 8),  # 0, 1
-                           self.create_delta(20, 8), self.create_delta(0, 9),  # 2, 3
-                           self.create_delta(0, 13), self.create_delta(0, 19),  # 4, 5
-                           self.create_delta(45, 21)]  # 6
-        self.end_time = [self.create_delta(20, 12), self.create_delta(30, 18),  # 0, 1
-                         self.create_delta(50, 18), self.create_delta(30, 21),  # 2, 3
-                         self.create_delta(0, 22), self.create_delta(0, 23)]  # 4, 5
-        self.interval = [self.create_delta(5, 0), self.create_delta(10, 0),  # 0, 1
-                         self.create_delta(15, 0), self.create_delta(30, 0),  # 2, 3
-                         self.create_delta(0, 1)]  # 4
+        self.start_time = [self.create_timedelta(50, 7), self.create_timedelta(0, 8),  # 0, 1
+                           self.create_timedelta(20, 8), self.create_timedelta(0, 9),  # 2, 3
+                           self.create_timedelta(0, 13), self.create_timedelta(0, 19),  # 4, 5
+                           self.create_timedelta(45, 21)]  # 6
+        self.end_time = [self.create_timedelta(20, 12), self.create_timedelta(30, 18),  # 0, 1
+                         self.create_timedelta(50, 18), self.create_timedelta(30, 21),  # 2, 3
+                         self.create_timedelta(0, 22), self.create_timedelta(0, 23)]  # 4, 5
+        self.interval = [self.create_timedelta(5, 0), self.create_timedelta(10, 0),  # 0, 1
+                         self.create_timedelta(15, 0), self.create_timedelta(30, 0),  # 2, 3
+                         self.create_timedelta(0, 1)]  # 4
 
         self.recipe = [[[Table.학기중_월금_순환노선.value, Table.학기중_월금_예술인.value, Table.학기중_월금_한대앞.value],
                         [Table.학기중_휴일_순환노선.value]],
                        [[Table.계절_월금_순환노선.value, Table.계절_월금_예술인.value, Table.계절_월금_한대앞.value],
                         [Table.계절_휴일_순환노선.value]], [[Table.방학_월금_순환노선.value], [Table.방학_휴일_순환노선.value]]]
 
-    def get_table(self, season, weekend):
+    def make_table(self, season, weekend):
         '''
 
         :return: [순환노선, 에술인, 한대앞역], 셔틀콕 기준 시간
@@ -91,17 +92,21 @@ class TimeTable(object):
         가장 가까운 셔틀 시간을 계산하여 뿌려 줌
         :return:
         '''
-        current_time = timedelta(hours=datetime.today().hour,
-                                 minutes=datetime.today().minute,
-                                 seconds=datetime.today().second)
+        KST = timezone('Asia/Seoul')
+        NOW = datetime.now().astimezone(KST)
+        current_time = timedelta(hours=NOW.hour,
+                                 minutes=NOW.minute,
+                                 seconds=NOW.second)
         print('현재 시각은 {} 입니다.'.format(current_time))
-        season = self.season_is(current_time)
-        weekend = self.weekend_is(current_time)
+        season = self.check_season(current_time)
+        weekend = self.check_weekend()
         # table = self.get_table(season, weekend)
-        table = self.get_table(0, 0)
-        output = self.calc_response(table, current_time)
+        table = self.make_table(0, 0)
+        response = self.create_response(table, current_time)
 
-    def season_is(self, current_time):
+        return response
+
+    def check_season(self, current_time):
         '''
         학기중/ 계절학기/ 방학 인지
         :param time:
@@ -109,11 +114,12 @@ class TimeTable(object):
         '''
         pass
 
-    def weekend_is(self, current_time):
+    def check_weekend(self):
         '''
         월~금/ 주말, 공휴일 인지
         :return:
         '''
+
         return 0
 
     @staticmethod
@@ -121,48 +127,67 @@ class TimeTable(object):
         return time(hour=hours, minute=minutes)
 
     @staticmethod
-    def create_delta(minutes, hours=0):
+    def create_timedelta(minutes, hours=0):
         return timedelta(minutes=minutes, hours=hours)
 
-    def calc_response(self, table, current_time):
+    def create_response(self, table, current_time):
         '''
         [창의원, 셔틀콕, 한대앞역, 예술인, 셔틀콕2]
         :param table:
         :param current_time:
         :return:
         '''
+        output = {}
 
         # 창의원
-        gap = - self.create_delta(5)
+        gap = - self.create_timedelta(5)
         dorm_cycle, dorm_station, dorm_artin = self.calc_close_time(table, current_time, gap)
         # None 이 들어올 시, 예외처리
         # 셔틀콕
-        gap = self.create_delta(0)
+        gap = self.create_timedelta(0)
         shuttle1_cycle, shuttle1_station, shuttle1_artin = self.calc_close_time(table, current_time, gap)
         # 한대앞역
-        gap = self.create_delta(10)
-        station_cycle, station_station, _ = self.calc_close_time(table, current_time, gap)
+        gap = self.create_timedelta(10)
+        station_cycle, station_station, station_artin = self.calc_close_time(table, current_time, gap)
         # 예술인
-        gap = self.create_delta(10)
+        gap = self.create_timedelta(10)
         _, _, artin_artin = self.calc_close_time(table, current_time, gap)
-        gap = self.create_delta(15)
+        gap = self.create_timedelta(15)
         artin_cycle, _, _ = self.calc_close_time(table, current_time, gap)
         # 셔틀콕2
-        gap = self.create_delta(20)
+        gap = self.create_timedelta(20)
         _, shuttle2_station, shuttle2_artin = self.calc_close_time(table, current_time, gap)
-        gap = self.create_delta(25)
+        gap = self.create_timedelta(25)
         shuttle2_cycle, _, _= self.calc_close_time(table, current_time, gap)
 
-        self.print_time('기숙사에서 출발하는 순환버스', dorm_cycle)
-        self.print_time('기숙사에서 출발하는 한대앞역행 버스', dorm_station)
-        self.print_time('기숙사에서 출발하는 예술인행 버스', dorm_artin)
-        self.print_time('셔틀콕에서 출발하는 순환버스', shuttle1_cycle)
-        self.print_time('셔틀콕에서 출발하는 한대앞역행 버스', shuttle1_station)
-        self.print_time('셔틀콕에서 출발하는 예술인행 버스', shuttle1_artin)
-        self.print_time('한대앞역에서 출발하는 버스', self.close_bus(station_cycle, station_station))
-        self.print_time('예술인아파트에서 출발하는 버스', self.close_bus(artin_cycle, artin_artin))
-        self.print_time('셔틀콕에서 기숙사로 가는 버스', self.close_bus(shuttle2_station, shuttle2_cycle, shuttle2_artin))
+        output["mode"] = "shuttle_bus"
+        output["dorm_cycle"] = self.get_output(dorm_cycle)
+        output["dorm_station"] = self.get_output(dorm_station)
+        output["dorm_artin"] = self.get_output(dorm_artin)
+        output["shuttle_cycle"] = self.get_output(shuttle1_cycle)
+        output["shuttle_station"] = self.get_output(shuttle1_station)
+        output["shuttle_artin"] = self.get_output(shuttle1_artin)
+        output["station"] = self.get_output(self.close_bus(station_cycle, station_station))
+        output["station_artin"] = self.get_output(self.close_bus(station_artin, station_cycle))
+        output["artin"] = self.get_output(self.close_bus(artin_cycle, artin_artin))
+        output["shuttle_dorm"] = self.get_output(self.close_bus(shuttle2_station, shuttle2_cycle, shuttle2_artin))
+        pprint.pprint(output)
+        return output
 
+    def get_output(self, close_time):
+
+        status = self.check_status(close_time)
+        if status:
+            minutes = self.get_minutes(close_time)
+            seconds = self.get_seconds(close_time)
+        else:
+            minutes = 0
+            seconds = 0
+        output = {"status": status,
+                  "minutes": minutes,
+                  "seconds": seconds}
+
+        return output
 
     def close_bus(self, a, b, c=None):
         if a is None:
@@ -174,29 +199,43 @@ class TimeTable(object):
 
         return min(a,b,c)
 
-    def print_time(self, text, close_time):
+    def check_status(self, close_time):
+        if close_time >= self.create_timedelta(hours=1, minutes=0).seconds:
+            # 순환노선과 한대앞역, 예술인역은 겹치지 않기 때문에 미리 제거
+            return False
         if close_time is None:
-            print(text,'는 운행이 종료 되었습니다.')
-            return
-        m, s = self.pretty(close_time)
-        print(text,'는 {}분 {}초 후에 도착합니다.'.format(m, s))
+            return False
+        return True
 
-
-    def pretty(self, seconds):
+    def get_minutes(self, seconds):
 
         m = 0
         s = seconds
         while s >= 60:
             s -= 60
             m += 1
+        return m
 
-        return m, s
+    def get_seconds(self, seconds):
+        m = 0
+        s = seconds
+        while s >= 60:
+            s -= 60
+            m += 1
+        return s
 
     def calc_close_time(self, table, current_time, gap):
         table_gap = self.add_gap(table, gap)
-        cycle = self.get_close_time(table_gap[0], current_time)
-        station = self.get_close_time(table_gap[1], current_time)
-        artin = self.get_close_time(table_gap[2], current_time)
+        cycle, station, artin = None, None, None
+        num_lines = len(table_gap)
+
+        if num_lines >= 1:
+            cycle = self.get_close_time(table_gap[0], current_time)
+        if num_lines >= 2:
+            station = self.get_close_time(table_gap[1], current_time)
+        if num_lines == 3:
+            artin = self.get_close_time(table_gap[2], current_time)
+
         return cycle, station, artin
 
 
@@ -233,5 +272,5 @@ class TimeTable(object):
 
 
 if __name__ == "__main__":
-    test = TimeTable()
+    test = ShuttleBus()
     test.response()

@@ -46,7 +46,7 @@ class PreProcessor(metaclass=Singleton):
 
         self.DEFAULT_CONFIG = config.DEFAULT_CONFIG
 
-        self.tokenizer = FullTokenizer(self.DEFAULT_CONFIG['vocab_file'], use_morphs=True)
+        self.tokenizer = FullTokenizer(self.DEFAULT_CONFIG['vocab_file'], use_morphs=self.DEFAULT_CONFIG['use_morphs'])
         self.vocab = load_vocab_as_list(self.DEFAULT_CONFIG['vocab_file'])
 
     def str_to_tokens(self, text):
@@ -96,7 +96,7 @@ class PreProcessor(metaclass=Singleton):
         all_doc_tokens = []
 
         query_tokens = self.str_to_tokens(query_text)
-        print('TOKENIZED TEXT: ',query_tokens)
+        print('TOKENIZED TEXT: ', query_tokens)
         if len(query_tokens) > max_query_length:
             query_tokens = query_tokens[0:max_query_length]
 
