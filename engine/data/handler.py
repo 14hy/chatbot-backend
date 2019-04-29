@@ -66,6 +66,48 @@ class QueryMaker():
         input_feature = self.preprocessor.create_InputFeature(text)
         return self.bert_model.extract_feature_vector(input_feature)
 
+    def calc_jaccard_with_questions(self, chat):
+
+        question_list = self.pymongo_wrapper.get_question_list()
+        if question_list == []:
+            return 0.0
+
+        chat_morphs = self.preprocessor.str_to_morphs(chat).split(' ')
+        chat_len = len(chat_morphs)
+        distance_dict = {}
+
+        for question in question_list:
+            question_morphs = question.morphs.split(' ')
+            question_len = len(question_morphs)
+            num_union = chat_len + question_len
+            num_joint = 0
+            for i in range(len(question_morphs)):
+                for j in range(len(chat_morphs)):
+                    if question_morphs[i] == chat_morphs[j]:
+                        num_joint += 1
+            distance_dict[question.text] = num_joint / (num_union - num_joint)
+
+        distance_dict = OrderedDict(sorted(distance_dict.items(), key=lambda t: t[1], reverse=True))
+
+        print('*' * 50)
+        i = 0
+        for item, distance in distance_dict.items():
+            print(i, 'th item: ', item, '/ jaccard_distance: ', distance)
+            i += 1
+            if i == 5:
+                break
+
+        item = list(distance_dict.items())[0][0]
+        distance = list(distance_dict.items())[0][1]
+
+        if distance >= 0.4:
+            # TODO 임계값 설정으로 넘기기
+            matched_question = self.pymongo_wrapper.get_question_by_text(item)
+            return matched_question, distance
+        else:
+            return None, None
+
+
     def match_query_with_question(self, chat, feature_vector, keywords):
         '''
         :param chat:
@@ -101,6 +143,8 @@ class QueryMaker():
         for item, distance in distance_dict.items():
             print(i, 'th item: ', item, '/ distance: ', distance)
             i += 1
+            if i == 5:
+                break
 
         # output
         item = list(distance_dict.items())[0][0]
@@ -125,15 +169,30 @@ class ChatHandler(metaclass=Singleton):
         :return: Query object
         '''
         keywords = self.query_maker.get_keywords(chat)
-        feature_vector = self.query_maker.get_feature_vector(chat)
-        matched_question, distance = self.query_maker.match_query_with_question(chat,
+        matched_question, jaccard_score = self.query_maker.calc_jaccard_with_questions(chat)
+        feature_vector = None
+        feature_distance = None
+
+
+        if jaccard_score is None:
+            # 자카드 유사도가 임계값을 넘었을 시, 사용
+            feature_vector = self.query_maker.get_feature_vector(chat)
+            matched_question, feature_distance = self.query_maker.match_query_with_question(chat,
                                                                                 feature_vector,
                                                                                 keywords)
 
-        query = Query(chat, feature_vector, keywords, matched_question, distance)
+        query = Query(chat=chat,
+                      feature_vector=feature_vector,
+                      keywords=keywords,
+                      matched_question=matched_question,
+                      feature_distance=feature_distance,
+                      jaccard_distance=jaccard_score)
+
         self.pymongo_wrapper.insert_query(query)
+
         return query
 
 
 if __name__ == '__main__':
     ch = ChatHandler()
+    ch.handle_chat('셔틀')

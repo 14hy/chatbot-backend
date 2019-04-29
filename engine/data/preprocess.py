@@ -57,6 +57,9 @@ class PreProcessor(metaclass=Singleton):
         '''
         return self.tokenizer.tokenize(text)
 
+    def str_to_morphs(self, text):
+        return self.tokenizer.text_to_morphs(text)
+
     def get_keywords(self, text):
         return self.tokenizer.get_keywords(text)
 

@@ -4,7 +4,7 @@ from engine.model.bert import Model
 
 class Question(object):
     def __init__(self, text, category, answer, feature_vector,
-                 keywords, object_id=None):
+                 keywords, morphs, object_id=None):
         '''
 
         :param text: str, 질문
@@ -18,6 +18,7 @@ class Question(object):
         self.answer = answer
         self.text = text
         self.feature_vector = feature_vector
+        self.morphs = morphs
 
 class QuestionMaker(object):
 
@@ -44,9 +45,11 @@ class QuestionMaker(object):
 
         input_feature = self.preprocessor.create_InputFeature(text)
         keywords = self.preprocessor.get_keywords(text)
+        morphs = self.preprocessor.str_to_morphs(text)
         feature_vector = self.bert_model.extract_feature_vector(input_feature)
+        print(morphs)
 
-        return Question(text, category, answer, feature_vector, keywords)
+        return Question(text, category, answer, feature_vector, keywords, morphs)
 
 
 if __name__ == '__main__':

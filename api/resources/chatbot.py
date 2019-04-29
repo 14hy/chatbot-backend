@@ -44,8 +44,19 @@ class Manager(Resource):
             pw.create_question_and_insert(_text, _answer)
             return {'created_question_and_insert': 'success'}
         except Exception as err:
+            print(err)
             return {'error': err}
 
+@v1.route('/db/remove_all_questions')
+class Manager(Resource):
+
+    @v1.doc('모든 질문 삭제')
+    def delete(self):
+        try:
+            pw.remove_all_questions()
+            return {'remove_all_questions': 'success'}
+        except Exception as err:
+            return {'error': err}
 
 # 만들 api
 '''

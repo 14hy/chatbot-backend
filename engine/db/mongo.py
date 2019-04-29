@@ -27,6 +27,7 @@ class PymongoWrapper(metaclass=Singleton):
                             document['answer'],
                             feature_vector,
                             document['keywords'],
+                            document['morphs'],
                             document['_id'])
         return question
 
@@ -34,7 +35,7 @@ class PymongoWrapper(metaclass=Singleton):
         feature_vector = pickle.loads(np.array(document['feature_vector']))
         matched_question = self.get_question_by_text(document['matched_question'])
         query = Query(document['chat'], feature_vector, document['keywords'],
-                      matched_question, document['distance'])
+                      matched_question, document['feature_distance'], document['jaccard_distance'])
         return query
 
     def create_question_and_insert(self, text, answer=None):
@@ -57,7 +58,8 @@ class PymongoWrapper(metaclass=Singleton):
                     'answer': question.answer,
                     'feature_vector': feature_vector,
                     'category': question.category,
-                    'keywords': question.keywords}
+                    'keywords': question.keywords,
+                    'morphs': question.morphs}
 
         return self._questions.update_one({'text': document['text']}, {'$set': document},
                                           upsert=True)  # update_one -> 중복 삽입을 막기 위해
@@ -164,7 +166,8 @@ class PymongoWrapper(metaclass=Singleton):
             'keywords': query.keywords,
             'matched_question': query.matched_question.text,
             # 저장은 object id로 하지만 query 객체는 question 객체 이므로 헷갈리지 말 것
-            'distance': query.distance
+            'feature_distance': query.feature_distance,
+            'jaccard_distance': query.jaccard_distance
         }
         return self._queries.update_one({'chat': document['chat']}, {'$set': document}, upsert=True)
 
