@@ -168,3 +168,8 @@ class PreProcessor(metaclass=Singleton):
                 pred_answer_text += ' ' + word
 
         return pred_answer_text
+
+
+if __name__ == "__main__":
+    prep = PreProcessor()
+
