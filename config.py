@@ -7,7 +7,7 @@ TEST = {
     'max_seq_length': 25,
     'max_query_length': 25,
     'model_path': os.path.join(BASE_DIR, '../data/model_1/model.ckpt-100000'),
-    'bert_json': os.path.join(BASE_DIR, '../data/bert_config.json'),
+    'bert_json': os.path.join(BASE_DIR, './ckpt/bert_config.json'),
     'categories': ['셔틀', '밥', '잡담', '학사행정', '검색'],
     'feature_layers': -2,
     'distance': 'manhattan', # euclidean, manhattan
@@ -50,11 +50,13 @@ DEFAULT_CONFIG = TEST
 
 MONGODB_CONFIG = {
 
-    'local_ip': '127.0.0.1',
+    'local_ip': 'localhost',
     'port': 27017,
     'db_name': 'chatbot',
     'col_questions': 'questions',
-    'col_queries': 'queries'
+    'col_queries': 'queries',
+    'username': 'mhlee',
+    'password': 'mhlee'
 }
 
 

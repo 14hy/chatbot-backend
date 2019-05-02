@@ -14,7 +14,10 @@ class PymongoWrapper(metaclass=Singleton):
 
         self.MONGODB_CONFIG = config.MONGODB_CONFIG
 
-        _client = MongoClient(self.MONGODB_CONFIG['local_ip'], self.MONGODB_CONFIG['port'])
+        _client = MongoClient(host=self.MONGODB_CONFIG['local_ip'],
+                              port=self.MONGODB_CONFIG['port'],
+                              username=self.MONGODB_CONFIG['username'],
+                              password=self.MONGODB_CONFIG['password'])
         self._db = _client[self.MONGODB_CONFIG['db_name']]
         self._questions = self._db[self.MONGODB_CONFIG['col_questions']]
         self._queries = self._db[self.MONGODB_CONFIG['col_queries']]
