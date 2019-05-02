@@ -16,16 +16,14 @@ class CategorizeChat(Resource):
     def post(self):
         try:
             parser = reqparse.RequestParser()
-            parser.add_argument('chat', type=str, required=True, help='사용자가 입력한 질문및 발화')
+            parser.add_argument('chat', type=str, required=True, help='사용자가 입력한 질문 및 발화')
             args = parser.parse_args()
-
             _chat = args['chat']
             _answer = backend.chat_to_answer(_chat)
-            print('*** answer ***')
-            print(_answer)
             return _answer
         except Exception as err:
-            return {'error': err}
+            print(err)
+            pass
 
 
 @v1.route('/db/add_question')
@@ -45,7 +43,7 @@ class Manager(Resource):
             return {'created_question_and_insert': 'success'}
         except Exception as err:
             print(err)
-            return {'error': err}
+            return err
 
 @v1.route('/db/remove_all_questions')
 class Manager(Resource):

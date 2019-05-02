@@ -87,7 +87,6 @@ class QueryMaker():
         feature_vector = None
         manhattan_similarity = None
         jaccard_similarity = None
-
         if not jaccard_distances:
             feature_vector = self.get_feature_vector(chat)
             feature_distances = self.get_feature_distances(chat, feature_vector, keywords)
@@ -207,7 +206,6 @@ class ChatHandler(metaclass=Singleton):
             measurement = query.manhattan_similarity
         else:
             raise Exception('Query Distance가 모두 0')
-
         return self.create_answer(answer, morphs, distance, measurement)
 
     def answer_by_category(self, matched_question):

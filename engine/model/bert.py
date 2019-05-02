@@ -728,7 +728,7 @@ class Model(metaclass=Singleton):
         sequence_output = self.sess.run(self.sequence_output, feed_dict)
         feature_vector = np.mean(sequence_output[:, 1:length-1], axis=1) # [CLS] 와 [SEP]를 제외한 단어 벡터들을 더함
         toc = time.time()
-        print('*** 문장 벡터화 완료 시간: %5.3f ***' % (toc - tic))
+        print('*** Vectorizing Done: %5.3f ***' % (toc - tic))
         return np.reshape(feature_vector, newshape=(-1))
 
     def extract_elmo_feature_vector(self, input_feature):

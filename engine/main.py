@@ -71,9 +71,7 @@ class Engine(object):
         # TODO Query Feature extractor.
         answer = self.chat_handler.get_answer(chat)
         toc = time()
-        print('*** 생성된 답변 ***')
-        pprint(answer)
-        print('*** 소모 시간: {}'.format(toc-tic))
+        # pprint(answer)
 
         return answer
 
@@ -82,7 +80,7 @@ class Engine(object):
                                                               self.context)
         input_feature.show()
         feature_vectors = self.model.extract_feature_vector(input_feature, -2)
-        print('*** 생성된 feature vector ***\n', feature_vectors)
+        print('*** Generated feature vector ***\n', feature_vectors)
         return feature_vectors
 
 
