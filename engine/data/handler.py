@@ -59,6 +59,55 @@ class QueryMaker():
 
         self.DEFAULT_CONFIG = config.DEFAULT_CONFIG
 
+    def make_query(self, chat):
+        def get_top(distances, top=1, threshold=0.5):
+            assert type(distances) is OrderedDict
+            assert top >= 1
+
+            top = {}
+
+            for n in top:
+                item = list(distances.items())[n][0]
+                distance = list(distances.items())[n][1]
+                if distance >= threshold:
+                    question_matched = self.pymongo_wrapper.get_question_by_text(item)
+                    top[n] = (question_matched, distance)
+
+            if top == {}:
+                return None
+
+            return top
+
+        def get_one(top, num):
+            assert top == {}
+            return top[0][0], top[0][1]
+        keywords = self.get_keywords(chat)
+        jaccard_distances = self.get_jaccard_distances(chat)
+
+        feature_vector = None
+        feature_distance = None
+        jaccard_score = None
+
+        if not jaccard_distances:
+            feature_vector = self.query_maker.get_feature_vector(chat)
+            feature_distances = self.get_feature_distances(chat, feature_vector, keywords)
+            top = get_top(feature_distances, top=5)
+            matched_question, feature_distance = get_one(top)
+        else:
+            top = get_top(jaccard_distances, top=5)
+            matched_question, jaccard_score = get_one(top)
+
+        query = Query(chat=chat,
+                      feature_vector=feature_vector,
+                      keywords=keywords,
+                      matched_question=matched_question,
+                      feature_distance=feature_distance,
+                      jaccard_score=jaccard_score)
+
+        self.pymongo_wrapper.insert_query(query)
+
+        return query
+
     def get_keywords(self, text):
         return self.preprocessor.get_keywords(text)
 
@@ -66,49 +115,35 @@ class QueryMaker():
         input_feature = self.preprocessor.create_InputFeature(text)
         return self.bert_model.extract_feature_vector(input_feature)
 
-    def calc_jaccard_with_questions(self, chat):
-
+    def get_jaccard_distances(self, chat):
+        assert chat is not None
         question_list = self.pymongo_wrapper.get_question_list()
-        if question_list == []:
-            return 0.0
+        assert question_list is not None
 
-        chat_morphs = self.preprocessor.str_to_morphs(chat).split(' ')
-        chat_len = len(chat_morphs)
         distance_dict = {}
 
-        for question in question_list:
-            question_morphs = question.morphs.split(' ')
-            question_len = len(question_morphs)
-            num_union = chat_len + question_len
+        def _morphs_to_list(morphs):
+            return morphs.split(' ')
+
+        def _calc_jaacard(A, B):
+            num_union = len(A) + len(B)
             num_joint = 0
-            for i in range(len(question_morphs)):
-                for j in range(len(chat_morphs)):
-                    if question_morphs[i] == chat_morphs[j]:
+            for a in A:
+                for b in B:
+                    if a == b:
                         num_joint += 1
-            distance_dict[question.text] = num_joint / (num_union - num_joint)
+            return num_joint / (num_union - num_joint)
 
-        distance_dict = OrderedDict(sorted(distance_dict.items(), key=lambda t: t[1], reverse=True))
+        chat_morphs = _morphs_to_list(self.preprocessor.str_to_morphs(chat))
 
-        print('*' * 50)
-        i = 0
-        for item, distance in distance_dict.items():
-            print(i, 'th item: ', item, '/ jaccard_distance: ', distance)
-            i += 1
-            if i == 5:
-                break
+        for question in question_list:
+            question_morphs = _morphs_to_list(question.morphs)
+            distance_dict[question.text] = _calc_jaacard(chat_morphs, question_morphs)
 
-        item = list(distance_dict.items())[0][0]
-        distance = list(distance_dict.items())[0][1]
-
-        if distance >= 0.4:
-            # TODO 임계값 설정으로 넘기기
-            matched_question = self.pymongo_wrapper.get_question_by_text(item)
-            return matched_question, distance
-        else:
-            return None, None
+        return OrderedDict(sorted(distance_dict.items(), key=lambda t: t[1], reverse=True))
 
 
-    def match_query_with_question(self, chat, feature_vector, keywords):
+    def get_feature_distances(self, chat, feature_vector, keywords):
         '''
         :param chat:
         :param feature_vector:
@@ -118,12 +153,11 @@ class QueryMaker():
         assert feature_vector is not None
 
         question_list = self.pymongo_wrapper.get_questions_by_keywords(keywords=keywords)
-        if question_list == []: # 걸리는 키워드가 없는 경우 모두 다 비교
+        if not question_list: # 걸리는 키워드가 없는 경우 모두 다 비교
             question_list = self.pymongo_wrapper.get_question_list()
-        distance_dict = {}
 
-        print('***주어진 query, "{}" 와의 거리 비교 테스트***'.format(chat))
-        # print('*' * 50)
+        distances = {}
+
         for question in question_list:
             a = feature_vector
             b = question.feature_vector
@@ -133,25 +167,9 @@ class QueryMaker():
                 distance = euclidean_distance(a, b)
             else:
                 raise Exception('DEFAUL_CONFIG - distance 는 "euclidean", "manhattan" 둘중 하나 여야 합니다.')
-            distance_dict[question.text] = distance
+            distances[question.text] = distance
 
-        distance_dict = OrderedDict(sorted(distance_dict.items(), key=lambda t: t[1]))
-
-        # LOGGING
-        print('*' * 50)
-        i = 0
-        for item, distance in distance_dict.items():
-            print(i, 'th item: ', item, '/ distance: ', distance)
-            i += 1
-            if i == 5:
-                break
-
-        # output
-        item = list(distance_dict.items())[0][0]
-        distance = list(distance_dict.items())[0][1]
-        matched_question = self.pymongo_wrapper.get_question_by_text(item)
-
-        return matched_question, distance
+        return OrderedDict(sorted(distances.items(), key=lambda t: t[1]))
 
 
 class ChatHandler(metaclass=Singleton):
@@ -168,29 +186,9 @@ class ChatHandler(metaclass=Singleton):
         :param chat: str
         :return: Query object
         '''
-        keywords = self.query_maker.get_keywords(chat)
-        matched_question, jaccard_score = self.query_maker.calc_jaccard_with_questions(chat)
-        feature_vector = None
-        feature_distance = None
-
-
-        if jaccard_score is None:
-            # 자카드 유사도가 임계값을 넘었을 시, 사용
-            feature_vector = self.query_maker.get_feature_vector(chat)
-            matched_question, feature_distance = self.query_maker.match_query_with_question(chat,
-                                                                                feature_vector,
-                                                                                keywords)
-
-        query = Query(chat=chat,
-                      feature_vector=feature_vector,
-                      keywords=keywords,
-                      matched_question=matched_question,
-                      feature_distance=feature_distance,
-                      jaccard_distance=jaccard_score)
-
-        self.pymongo_wrapper.insert_query(query)
-
+        query = self.query_maker.make_query(chat)
         return query
+
 
 
 if __name__ == '__main__':

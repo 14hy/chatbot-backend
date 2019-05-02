@@ -1,8 +1,6 @@
 import pickle
-
 import numpy as np
 from pymongo import MongoClient
-
 import config
 from engine.data.query import Query
 from engine.data.question import Question, QuestionMaker
@@ -67,7 +65,7 @@ class PymongoWrapper(metaclass=Singleton):
         return self._questions.update_one({'text': document['text']}, {'$set': document},
                                           upsert=True)  # update_one -> 중복 삽입을 막기 위해
 
-    def read_from_txt(self, txt='../data/faq.txt'):
+    def read_from_txt(self, txt='./data/shuttle_bus.txt'):
         '''텍스트 파일로 부터 질문을 읽어서 데이터 베이스에 저장,
         질문
         형식으로 저장
