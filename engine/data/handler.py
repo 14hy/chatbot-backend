@@ -2,6 +2,7 @@
 # 2. 질문 전처리 및 특징 추출
 # 3. 질문 분류 및
 from collections import OrderedDict
+from pprint import pprint
 
 import numpy as np
 
@@ -10,6 +11,7 @@ from engine.data.preprocess import PreProcessor
 from engine.data.query import Query
 from engine.db.mongo import PymongoWrapper
 from engine.model.bert import Model
+from engine.services.shuttle import ShuttleBus
 from engine.utils import Singleton
 
 DEFAULT_CONFIG = config.DEFAULT_CONFIG
@@ -62,47 +64,44 @@ class QueryMaker():
     def make_query(self, chat):
         def get_top(distances, top=1, threshold=0.5):
             assert type(distances) is OrderedDict
-            assert top >= 1
+            output = {}
 
-            top = {}
-
-            for n in top:
-                item = list(distances.items())[n][0]
-                distance = list(distances.items())[n][1]
+            for n, each in enumerate(list(distances.items())):
+                item = each[0]
+                distance = each[1]
                 if distance >= threshold:
                     question_matched = self.pymongo_wrapper.get_question_by_text(item)
-                    top[n] = (question_matched, distance)
+                    output[n] = (question_matched, distance)
 
-            if top == {}:
+            if len(output) == 0:
                 return None
 
-            return top
+            return output
 
-        def get_one(top, num):
-            assert top == {}
+        def get_one(top):
             return top[0][0], top[0][1]
+
         keywords = self.get_keywords(chat)
-        jaccard_distances = self.get_jaccard_distances(chat)
+        jaccard_distances = get_top(self.get_jaccard_distances(chat), top=5)
 
         feature_vector = None
-        feature_distance = None
-        jaccard_score = None
+        manhattan_similarity = None
+        jaccard_similarity = None
 
         if not jaccard_distances:
-            feature_vector = self.query_maker.get_feature_vector(chat)
+            feature_vector = self.get_feature_vector(chat)
             feature_distances = self.get_feature_distances(chat, feature_vector, keywords)
             top = get_top(feature_distances, top=5)
-            matched_question, feature_distance = get_one(top)
+            matched_question, manhattan_similarity = get_one(top)
         else:
-            top = get_top(jaccard_distances, top=5)
-            matched_question, jaccard_score = get_one(top)
+            matched_question, jaccard_similarity = get_one(jaccard_distances)
 
         query = Query(chat=chat,
                       feature_vector=feature_vector,
                       keywords=keywords,
                       matched_question=matched_question,
-                      feature_distance=feature_distance,
-                      jaccard_score=jaccard_score)
+                      manhattan_similarity=manhattan_similarity,
+                      jaccard_similarity=jaccard_similarity)
 
         self.pymongo_wrapper.insert_query(query)
 
@@ -123,7 +122,7 @@ class QueryMaker():
         distance_dict = {}
 
         def _morphs_to_list(morphs):
-            return morphs.split(' ')
+            return morphs['output'].split(' ')
 
         def _calc_jaacard(A, B):
             num_union = len(A) + len(B)
@@ -134,7 +133,7 @@ class QueryMaker():
                         num_joint += 1
             return num_joint / (num_union - num_joint)
 
-        chat_morphs = _morphs_to_list(self.preprocessor.str_to_morphs(chat))
+        chat_morphs = _morphs_to_list(self.preprocessor.get_morphs(chat))
 
         for question in question_list:
             question_morphs = _morphs_to_list(question.morphs)
@@ -180,17 +179,46 @@ class ChatHandler(metaclass=Singleton):
     def __init__(self):
         self.query_maker = QueryMaker()
         self.pymongo_wrapper = PymongoWrapper()
+        self._service_shuttle = ShuttleBus()
+        self.preprocessor = PreProcessor()
 
-    def handle_chat(self, chat):
+    def create_answer(self, answer, morphs, distance, measurement):
+        return {"morphs": morphs,# 형태소 분석 된 결과
+                "measurement": measurement,  # 유사도 측정의 방법, [jaccard, manhattan]
+                "distance": distance,  # 위 유사도의 거리
+                "answer": answer}
+
+    def get_answer(self, chat):
         '''
         :param chat: str
         :return: Query object
         '''
         query = self.query_maker.make_query(chat)
-        return query
+        matched_question = query.matched_question
+        morphs = self.preprocessor.get_morphs(chat)
+        if not matched_question.answer:
+            answer = self.answer_by_category(matched_question)
 
+        if query.jaccard_similarity:
+            distance = query.jaccard_similarity
+            measurement = 'jaccard_similiarity'
+        elif query.manhattan_similarity:
+            distance = query.manhattan_similarity
+            measurement = query.manhattan_similarity
+        else:
+            raise Exception('Query Distance가 모두 0')
 
+        return self.create_answer(answer, morphs, distance, measurement)
+
+    def answer_by_category(self, matched_question):
+
+        category = matched_question.category
+
+        if category == 'shuttle_bus':
+            return self._service_shuttle.response()
+        elif category == 'talk':
+            return {"mode": "talk", "response": matched_question.answer}
 
 if __name__ == '__main__':
     ch = ChatHandler()
-    ch.handle_chat('셔틀')
+    pprint(ch.get_answer('셔틀은 대체 언제 옵니까?'))

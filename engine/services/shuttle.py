@@ -1,7 +1,6 @@
 import enum
 from datetime import time, datetime, timedelta
 from pytz import timezone
-import pprint
 
 class Table(enum.Enum):
     # 0: 학기 중, 1: 계절학기, 2: 방학 중
@@ -43,7 +42,6 @@ class ShuttleBus(object):
     # 시작시간, 끝나는 시간, 시즌, 휴일, 노선에 따라 차등 적용
 
     def __init__(self):
-        pass
         self.start_time = [self.create_timedelta(50, 7), self.create_timedelta(0, 8),  # 0, 1
                            self.create_timedelta(20, 8), self.create_timedelta(0, 9),  # 2, 3
                            self.create_timedelta(0, 13), self.create_timedelta(0, 19),  # 4, 5
@@ -171,7 +169,6 @@ class ShuttleBus(object):
         output["station_artin"] = self.get_output(self.close_bus(station_artin, station_cycle))
         output["artin"] = self.get_output(self.close_bus(artin_cycle, artin_artin))
         output["shuttle_dorm"] = self.get_output(self.close_bus(shuttle2_station, shuttle2_cycle, shuttle2_artin))
-        pprint.pprint(output)
         return output
 
     def get_output(self, close_time):

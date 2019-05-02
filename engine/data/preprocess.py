@@ -57,7 +57,7 @@ class PreProcessor(metaclass=Singleton):
         '''
         return self.tokenizer.tokenize(text)
 
-    def str_to_morphs(self, text):
+    def get_morphs(self, text):
         return self.tokenizer.text_to_morphs(text)
 
     def get_keywords(self, text):
@@ -99,7 +99,6 @@ class PreProcessor(metaclass=Singleton):
         all_doc_tokens = []
 
         query_tokens = self.str_to_tokens(query_text)
-        print('TOKENIZED TEXT: ', query_tokens)
         if len(query_tokens) > max_query_length:
             query_tokens = query_tokens[0:max_query_length]
 

@@ -36,7 +36,7 @@ class PymongoWrapper(metaclass=Singleton):
         feature_vector = pickle.loads(np.array(document['feature_vector']))
         matched_question = self.get_question_by_text(document['matched_question'])
         query = Query(document['chat'], feature_vector, document['keywords'],
-                      matched_question, document['feature_distance'], document['jaccard_distance'])
+                      matched_question, document['manhattan_similarity'], document['jaccard_similarity'])
         return query
 
     def create_question_and_insert(self, text, answer=None):
@@ -167,8 +167,8 @@ class PymongoWrapper(metaclass=Singleton):
             'keywords': query.keywords,
             'matched_question': query.matched_question.text,
             # 저장은 object id로 하지만 query 객체는 question 객체 이므로 헷갈리지 말 것
-            'feature_distance': query.feature_distance,
-            'jaccard_distance': query.jaccard_distance
+            'manhattan_similarity': query.manhattan_similarity,
+            'jaccard_score': query.jaccard_similarity
         }
         return self._queries.update_one({'chat': document['chat']}, {'$set': document}, upsert=True)
 

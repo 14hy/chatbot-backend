@@ -717,21 +717,18 @@ class Model(metaclass=Singleton):
 
         :param input_feature: InputFeature
         :param layers: -1, -2, -3...
-        -1 = Transformer의 마지막 레이어,
+        -1 = Transformer의 마지막 레이어, ...
         :return:
         '''
         tic = time.time()
         length = np.sum(input_feature.input_mask)
-        print('@@@', length)
         feed_dict = {self.input_ids: np.array(input_feature.input_ids).reshape((1, -1)),
                      self.input_masks: np.array(input_feature.input_mask).reshape(1, -1),
                      self.segment_ids: np.array(input_feature.segment_ids).reshape(1, -1)}
         sequence_output = self.sess.run(self.sequence_output, feed_dict)
-        print(sequence_output.shape)
-        feature_vector = np.mean(sequence_output[: ,1:length-1], axis=1) # [CLS] 와 [SEP]를 제외한 단어 벡터들을 더함
-        print('@@!!!@', feature_vector.shape)
+        feature_vector = np.mean(sequence_output[:, 1:length-1], axis=1) # [CLS] 와 [SEP]를 제외한 단어 벡터들을 더함
         toc = time.time()
-        print('*** 문장 벡터화 완료 시간: %5.3f***' % (toc - tic))
+        print('*** 문장 벡터화 완료 시간: %5.3f ***' % (toc - tic))
         return np.reshape(feature_vector, newshape=(-1))
 
     def extract_elmo_feature_vector(self, input_feature):

@@ -1,3 +1,4 @@
+from pprint import pprint
 from time import time
 
 from engine.data.handler import ChatHandler
@@ -14,7 +15,6 @@ class Engine(object):
         self.vocab = None
         self.model = Model()
         self.chat_handler = ChatHandler()
-        self._service_shuttle = ShuttleBus()
         #
         # self.test_mode()
         # self.preprocessor = PreProcessor()
@@ -69,12 +69,10 @@ class Engine(object):
         tic = time()
 
         # TODO Query Feature extractor.
-        query = self.chat_handler.handle_chat(chat)
-
-        answer = self.answer_by_category(query.matched_question)
-        # 함수화하기
+        answer = self.chat_handler.get_answer(chat)
         toc = time()
-        print('*** 생성된 답변 ***\n', answer)
+        print('*** 생성된 답변 ***')
+        pprint(answer)
         print('*** 소모 시간: {}'.format(toc-tic))
 
         return answer
@@ -87,14 +85,7 @@ class Engine(object):
         print('*** 생성된 feature vector ***\n', feature_vectors)
         return feature_vectors
 
-    def answer_by_category(self, matched_question):
 
-        category = matched_question.category
-
-        if category == 'shuttle_bus':
-            return self._service_shuttle.response()
-        elif category == 'talk':
-            return {"mode": "talk", "response": matched_question.answer}
 
 if __name__ == '__main__':
     main = Engine()
