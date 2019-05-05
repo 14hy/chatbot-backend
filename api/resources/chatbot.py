@@ -49,7 +49,7 @@ class Manager(Resource):
 class Shuttle(Resource):
 
     @v1.doc('셔틀 버스 정보 조회', params={'weekend': '휴일여부(True, False)', 'season': 'semester/ between/ vacation',
-                                   'hours': 'int(0~23)', 'minutes': 'int(0~59)', 'seconds': 'int(0~59)'})
+                                   'hours': '시간 - int(0~23)', 'minutes': '분 - int(0~59)', 'seconds': '초 - int(0~59)'})
     def post(self):
         try:
             parser = reqparse.RequestParser()
