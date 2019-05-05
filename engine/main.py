@@ -15,6 +15,7 @@ class Engine(object):
         self.vocab = None
         self.model = Model()
         self.chat_handler = ChatHandler()
+        self.shuttleBus = ShuttleBus()
         #
         # self.test_mode()
         # self.preprocessor = PreProcessor()
@@ -59,6 +60,12 @@ class Engine(object):
         if self.question is None:
             raise Exception("question is None")
         pass
+
+    def get_shuttle(self, weekend=None, season=None, hours=None, minutes=None, seconds=None, current=False):
+        if current:
+            return self.shuttleBus.response()
+        else:
+            return self.shuttleBus.custom_response(weekend, season, hours, minutes, seconds)
 
     def chat_to_answer(self, chat):
         '''

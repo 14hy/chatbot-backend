@@ -22,7 +22,7 @@ class CategorizeChat(Resource):
             _answer = backend.chat_to_answer(_chat)
             return _answer
         except Exception as err:
-            pass
+            {'status': 'error'}
 
 
 @v1.route('/db/questions/add')
@@ -43,7 +43,39 @@ class Manager(Resource):
             pw.create_question_and_insert(_text, _answer, _category)
             return {'status': 'Success'}
         except Exception as err:
-            return {'err': err}
+            return {'status': 'error'}
+
+@v1.route('/bus/shuttle')
+class Shuttle(Resource):
+
+    @v1.doc('셔틀 버스 정보 조회', params={'weekend': '휴일여부(True, False)', 'season': 'semester/ between/ vacation',
+                                   'hours': 'int', 'minutes': 'int', 'seconds': 'int'})
+    def post(self):
+        try:
+            parser = reqparse.RequestParser()
+            parser.add_argument('weekend', required=True, type=bool, help='휴일여부')
+            parser.add_argument('season', required=True, type=str, help='학기/ 계절학기/ 방학')
+            parser.add_argument('hours', type=int, required=True, help='시간')
+            parser.add_argument('minutes', type=int, required=True, help='분')
+            parser.add_argument('seconds', type=int, required=True, help='초')
+            args = parser.parse_args(strict=True)
+
+            _weekend = args['weekend']
+            _season = args['season']
+            _hours = args['hours']
+            _minutes = args['minutes']
+            _seconds = args['seconds']
+
+            return backend.get_shuttle(_weekend, _season, _hours, _minutes, _seconds)
+        except Exception as err:
+            return {'status': 'error'}
+
+    def get(self):
+        try:
+            return backend.get_shuttle(current=True)
+        except Exception as err:
+            return {'status': 'error'}
+
 
 # @v1.route('/db/questions/reset')
 # class Manager(Resource):
@@ -56,14 +88,4 @@ class Manager(Resource):
 #         except Exception as err:
 #             return {'error': err}
 
-# 만들 api
-'''
-question list
-question 생성, 삭제, 수정, 
-이 질문이 답변 한 쿼리 리스트?
 
-query list
-query 삭제, 수정, 분석(?)
-
-
-'''

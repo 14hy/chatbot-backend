@@ -104,6 +104,28 @@ class ShuttleBus(object):
 
         return response
 
+    def custom_response(self, weekend, season, hours, minutes, seconds):
+        '''정해진 시간으로 답변'''
+        KST = timezone('Asia/Seoul')
+        NOW = datetime(hour=hours, minute=minutes, second=seconds).astimezone(KST)
+        current_time = timedelta(hours=NOW.hour,
+                                 minutes=NOW.minute,
+                                 seconds=NOW.second)
+        if season == 'semester':
+            season = 0
+        elif season == 'between':
+            season = 1
+        elif season == 'vacation':
+            season = 2
+        if weekend == False:
+            weekend = 0
+        else:
+            weekend = 1
+        table = self.make_table(season, weekend)
+        response = self.create_response(table, current_time)
+
+        return response
+
     def check_season(self, current_time):
         '''
         학기중/ 계절학기/ 방학 인지
