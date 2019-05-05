@@ -1,5 +1,5 @@
 from flask_restplus import Resource
-from flask_restplus import reqparse, fields
+from flask_restplus import reqparse, fields, inputs
 from flask import Response
 from api.common.settings import *
 from engine.db.mongo import PymongoWrapper
@@ -49,15 +49,15 @@ class Manager(Resource):
 class Shuttle(Resource):
 
     @v1.doc('셔틀 버스 정보 조회', params={'weekend': '휴일여부(True, False)', 'season': 'semester/ between/ vacation',
-                                   'hours': 'int', 'minutes': 'int', 'seconds': 'int'})
+                                   'hours': 'int(0~23)', 'minutes': 'int(0~59)', 'seconds': 'int(0~59)'})
     def post(self):
         try:
             parser = reqparse.RequestParser()
-            parser.add_argument('weekend', required=True, type=bool, help='휴일여부')
+            parser.add_argument('weekend', required=True, type=inputs.boolean, help='휴일여부')
             parser.add_argument('season', required=True, type=str, help='학기/ 계절학기/ 방학')
-            parser.add_argument('hours', type=int, required=True, help='시간')
-            parser.add_argument('minutes', type=int, required=True, help='분')
-            parser.add_argument('seconds', type=int, required=True, help='초')
+            parser.add_argument('hours', type=int, required=True, help='시간(0~23)')
+            parser.add_argument('minutes', type=int, required=True, help='분(0~59)')
+            parser.add_argument('seconds', type=int, required=True, help='초(0~59)')
             args = parser.parse_args(strict=True)
 
             _weekend = args['weekend']
@@ -68,6 +68,7 @@ class Shuttle(Resource):
 
             return backend.get_shuttle(_weekend, _season, _hours, _minutes, _seconds)
         except Exception as err:
+            print(err)
             return {'status': 'error'}
 
     def get(self):

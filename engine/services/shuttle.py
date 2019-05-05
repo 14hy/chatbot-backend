@@ -2,6 +2,7 @@ import enum
 from datetime import time, datetime, timedelta
 from pytz import timezone
 
+
 class Table(enum.Enum):
     # 0: 학기 중, 1: 계절학기, 2: 방학 중
     # 0: 월~금, 1: 휴일
@@ -106,8 +107,10 @@ class ShuttleBus(object):
 
     def custom_response(self, weekend, season, hours, minutes, seconds):
         '''정해진 시간으로 답변'''
-        KST = timezone('Asia/Seoul')
-        NOW = datetime(hour=hours, minute=minutes, second=seconds).astimezone(KST)
+        # KST = timezone('Asia/Seoul')
+        NOW = datetime.now()
+        NOW = datetime(year=NOW.year, month=NOW.month, day=NOW.day,
+                       hour=hours, minute=minutes, second=seconds)
         current_time = timedelta(hours=NOW.hour,
                                  minutes=NOW.minute,
                                  seconds=NOW.second)
@@ -117,7 +120,10 @@ class ShuttleBus(object):
             season = 1
         elif season == 'vacation':
             season = 2
-        if weekend == False:
+        else:
+            raise Exception('season must be semester or between or vacation')
+
+        if not weekend:
             weekend = 0
         else:
             weekend = 1
@@ -178,7 +184,7 @@ class ShuttleBus(object):
         gap = self.create_timedelta(20)
         _, shuttle2_station, shuttle2_artin = self.calc_close_time(table, current_time, gap)
         gap = self.create_timedelta(25)
-        shuttle2_cycle, _, _= self.calc_close_time(table, current_time, gap)
+        shuttle2_cycle, _, _ = self.calc_close_time(table, current_time, gap)
 
         output["mode"] = "shuttle_bus"
         output["dorm_cycle"] = self.get_output(dorm_cycle)
@@ -216,7 +222,7 @@ class ShuttleBus(object):
         if c is None:
             c = 99999
 
-        return min(a,b,c)
+        return min(a, b, c)
 
     def check_status(self, close_time):
         if close_time is None:
@@ -257,7 +263,6 @@ class ShuttleBus(object):
             artin = self.get_close_time(table_gap[2], current_time)
 
         return cycle, station, artin
-
 
     def add_gap(self, table, gap):
         '''
