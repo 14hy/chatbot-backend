@@ -39,8 +39,8 @@ class PymongoWrapper(metaclass=Singleton):
                       matched_question, document['manhattan_similarity'], document['jaccard_similarity'])
         return query
 
-    def create_question_and_insert(self, text, answer=None):
-        question = self._question_maker.create_question(text, answer=answer)
+    def create_question_and_insert(self, text, answer=None, category=None):
+        question = self._question_maker.create_question(text, answer=answer, category=category)
         self.insert_question(question)
         return self
 
