@@ -203,7 +203,7 @@ class ChatHandler(metaclass=Singleton):
             measurement = 'jaccard_similiarity'
         elif query.manhattan_similarity:
             distance = query.manhattan_similarity
-            measurement = query.manhattan_similarity
+            measurement = 'manhattan_similarity'
         else:
             raise Exception('Query Distance가 모두 0')
         return self.create_answer(answer, morphs, distance, measurement)
@@ -215,7 +215,12 @@ class ChatHandler(metaclass=Singleton):
         if category == 'shuttle_bus':
             return self._service_shuttle.response()
         elif category == 'talk':
-            return {"mode": "talk", "response": matched_question.answer}
+            return {"mode": "talk", "response": "Preparing for talk..."}
+        elif category == 'food':
+            return {'mode': 'food', 'response': 'Preparing for food...'}
+        elif category == 'book':
+            return {'mode': 'book', 'response': 'Taeuk will do'}
+
 
 if __name__ == '__main__':
     ch = ChatHandler()
