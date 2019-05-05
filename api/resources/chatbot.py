@@ -22,7 +22,7 @@ class CategorizeChat(Resource):
             _answer = backend.chat_to_answer(_chat)
             return _answer
         except Exception as err:
-            return {'error': err}
+            pass
 
 
 @v1.route('/db/questions/add')
