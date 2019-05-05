@@ -1,5 +1,5 @@
 from flask_restplus import Resource
-from flask_restplus import reqparse, fields
+from flask_restplus import reqparse, fields, inputs
 from flask import Response
 from api.common.settings import *
 from engine.db.mongo import PymongoWrapper
@@ -53,7 +53,7 @@ class Shuttle(Resource):
     def post(self):
         try:
             parser = reqparse.RequestParser()
-            parser.add_argument('weekend', required=True, type=bool, help='휴일여부')
+            parser.add_argument('weekend', required=True, type=inputs.boolean, help='휴일여부')
             parser.add_argument('season', required=True, type=str, help='학기/ 계절학기/ 방학')
             parser.add_argument('hours', type=int, required=True, help='시간')
             parser.add_argument('minutes', type=int, required=True, help='분')

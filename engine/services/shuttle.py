@@ -106,8 +106,8 @@ class ShuttleBus(object):
 
     def custom_response(self, weekend, season, hours, minutes, seconds):
         '''정해진 시간으로 답변'''
-        KST = timezone('Asia/Seoul')
-        NOW = datetime(hour=hours, minute=minutes, second=seconds).astimezone(KST)
+        # KST = timezone('Asia/Seoul')
+        NOW = datetime(hour=hours, minute=minutes, second=seconds)
         current_time = timedelta(hours=NOW.hour,
                                  minutes=NOW.minute,
                                  seconds=NOW.second)
