@@ -197,11 +197,12 @@ class ShuttleBus(object):
         return min(a,b,c)
 
     def check_status(self, close_time):
+        if close_time is None:
+            return False
         if close_time >= self.create_timedelta(hours=1, minutes=0).seconds:
             # 순환노선과 한대앞역, 예술인역은 겹치지 않기 때문에 미리 제거
             return False
-        if close_time is None:
-            return False
+
         return True
 
     def get_minutes(self, seconds):
