@@ -2,11 +2,10 @@ from flask_restplus import Resource
 from flask_restplus import reqparse, fields, inputs
 from flask import Response
 from api.common.settings import *
-from engine.db.mongo import PymongoWrapper
+from engine.db.questions import index as questions
 from engine.main import Engine
 
 backend = Engine()
-pw = PymongoWrapper()
 
 
 @v1.route('/chat')
@@ -22,7 +21,8 @@ class CategorizeChat(Resource):
             _answer = backend.chat_to_answer(_chat)
             return _answer
         except Exception as err:
-            {'status': 'error'}
+            print(err)
+            return {'error': str(err)}
 
 
 @v1.route('/db/questions/add')
@@ -40,10 +40,12 @@ class Manager(Resource):
             _text = args['text']
             _answer = args['answer']
             _category = args['category']
-            pw.create_question_and_insert(_text, _answer, _category)
+            questions.create_and_insert(_text, _answer, _category)
             return {'status': 'Success'}
         except Exception as err:
-            return {'status': 'error'}
+            print(err)
+            return {'error': str(err)}
+
 
 @v1.route('/bus/shuttle')
 class Shuttle(Resource):
@@ -69,14 +71,14 @@ class Shuttle(Resource):
             return backend.get_shuttle(_weekend, _season, _hours, _minutes, _seconds)
         except Exception as err:
             print(err)
-            return {'status': 'error'}
+            return {'error': str(err)}
 
     def get(self):
         try:
             return backend.get_shuttle(current=True)
         except Exception as err:
-            return {'status': 'error'}
-
+            print(err)
+            return {'error': str(err)}
 
 # @v1.route('/db/questions/reset')
 # class Manager(Resource):
@@ -88,5 +90,3 @@ class Shuttle(Resource):
 #             return {'remove_all_questions': 'success'}
 #         except Exception as err:
 #             return {'error': err}
-
-

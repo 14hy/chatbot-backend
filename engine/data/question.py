@@ -1,29 +1,12 @@
 import config
 from engine.data.preprocess import PreProcessor
+from engine.db.questions.question import Question
 from engine.model.bert import Model
 
-class Question(object):
-    def __init__(self, text, category, answer, feature_vector,
-                 keywords, morphs, object_id=None):
-        '''
-
-        :param text: str, 질문
-        :param category: str, config에서 정의된 카테고리 이여야 함
-        :param answer: str/ None, 없어도 됨
-        :param feature_vector: [784] Feature vector
-        '''
-        self.keywords = keywords
-        self.object_id = object_id
-        self.category = category
-        self.answer = answer
-        self.text = text
-        self.feature_vector = feature_vector
-        self.morphs = morphs
 
 class QuestionMaker(object):
 
     def __init__(self):
-
         self.CONFIG = config.QUESTION
 
         self.preprocessor = PreProcessor()
@@ -47,7 +30,6 @@ class QuestionMaker(object):
         keywords = self.preprocessor.get_keywords(text)
         morphs = self.preprocessor.get_morphs(text)
         feature_vector = self.bert_model.extract_feature_vector(input_feature)
-
 
         return Question(text, category, answer, feature_vector, keywords, morphs)
 
