@@ -44,10 +44,10 @@ class PreProcessor(metaclass=Singleton):
 
     def __init__(self):
 
-        self.DEFAULT_CONFIG = config.DEFAULT_CONFIG
+        self.CONFIG = config.PREPROCESS
 
-        self.tokenizer = FullTokenizer(self.DEFAULT_CONFIG['vocab_file'], use_morphs=self.DEFAULT_CONFIG['use_morphs'])
-        self.vocab = load_vocab_as_list(self.DEFAULT_CONFIG['vocab_file'])
+        self.tokenizer = FullTokenizer(self.CONFIG['vocab_file'], use_morphs=self.CONFIG['use_morphs'])
+        self.vocab = load_vocab_as_list(self.CONFIG['vocab_file'])
 
     def str_to_tokens(self, text):
         '''
@@ -91,8 +91,8 @@ class PreProcessor(metaclass=Singleton):
         input_mask:  [1] [1] [1] [1] [1] [1] [0] ...
         '''
 
-        max_query_length = self.DEFAULT_CONFIG['max_query_length']
-        max_seq_length = self.DEFAULT_CONFIG['max_seq_length']
+        max_query_length = self.CONFIG['max_query_length']
+        max_seq_length = self.CONFIG['max_seq_length']
 
         token_to_original_index = []
         original_to_token_index = []

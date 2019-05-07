@@ -571,7 +571,7 @@ def tranformer_model(input_tensor, attention_mask, hidden_size, num_hidden_layer
 
 class Model(metaclass=Singleton):
     def __init__(self):
-        self.DEFAULT_CONFIG = config.DEFAULT_CONFIG
+        self.CONFIG = config.BERT
 
         # placeholders
         self.input_ids = None
@@ -598,9 +598,9 @@ class Model(metaclass=Singleton):
 
         :return:
         '''
-        bert_json = self.DEFAULT_CONFIG['bert_json']
-        model_path = self.DEFAULT_CONFIG['model_path']
-        max_seq_length = self.DEFAULT_CONFIG['max_seq_length']
+        bert_json = self.CONFIG['bert_json']
+        model_path = self.CONFIG['model_path']
+        max_seq_length = self.CONFIG['max_seq_length']
 
         bert_config = BertConfig()
         bert_config.read_from_json_file(bert_json)
@@ -646,7 +646,7 @@ class Model(metaclass=Singleton):
                                                            initializer_range=bert_config.initializer_range,
                                                            do_return_all_layers=True)
 
-                self.sequence_output = self.all_encoder_layers[self.DEFAULT_CONFIG['feature_layers']]
+                self.sequence_output = self.all_encoder_layers[self.CONFIG['feature_layers']]
                 self.elmo_output = self.all_encoder_layers[-1]
 
             with tf.variable_scope('pooler'):
@@ -685,7 +685,7 @@ class Model(metaclass=Singleton):
         tvars = tf.trainable_variables()
         assignment_map, initialized_variable_names = get_assignment_map_from_checkpoint(tvars, model_path)  # 201
         tf.train.init_from_checkpoint(model_path, assignment_map)
-        self.sess = tf.Session()  # TODO 두번 불러야 정상작동되는 에러 해결하자
+        self.sess = tf.Session()  # TODO 두번 불러야 정상작동되는 에러 해결
         self.sess.run(tf.global_variables_initializer())
         tvars = tf.trainable_variables()
         assignment_map, initialized_variable_names = get_assignment_map_from_checkpoint(tvars, model_path)  # 201
@@ -694,12 +694,6 @@ class Model(metaclass=Singleton):
         for var in tvars:
             if var.name in initialized_variable_names:
                 print(var.name, ' - INIT FROM CKPT')
-        # self.sess = tf.Session()
-        # self.sess.run(tf.global_variables_initializer())
-        # tvars = tf.trainable_variables()
-        # for _ in range(2):
-        #     assignment_map, initialized_variable_names = get_assignment_map_from_checkpoint(tvars, model_path)  # 201
-        #     tf.train.init_from_checkpoint(model_path, assignment_map)
 
     def predict(self, feature):
 
@@ -716,8 +710,6 @@ class Model(metaclass=Singleton):
         '''
 
         :param input_feature: InputFeature
-        :param layers: -1, -2, -3...
-        -1 = Transformer의 마지막 레이어, ...
         :return:
         '''
         tic = time.time()
@@ -731,12 +723,12 @@ class Model(metaclass=Singleton):
         print('*** Vectorizing Done: %5.3f ***' % (toc - tic))
         return np.reshape(feature_vector, newshape=(-1))
 
-    def extract_elmo_feature_vector(self, input_feature):
-        tic = time.time()
-        feed_dict = {self.input_ids: np.array(input_feature.input_ids).reshape((1, -1)),
-                     self.input_masks: np.array(input_feature.input_mask).reshape(1, -1),
-                     self.segment_ids: np.array(input_feature.segment_ids).reshape(1, -1)}
-        elmo_output = self.sess.run(self.elmo_output, feed_dict)
+    # def extract_elmo_feature_vector(self, input_feature):
+    #     tic = time.time()
+    #     feed_dict = {self.input_ids: np.array(input_feature.input_ids).reshape((1, -1)),
+    #                  self.input_masks: np.array(input_feature.input_mask).reshape(1, -1),
+    #                  self.segment_ids: np.array(input_feature.segment_ids).reshape(1, -1)}
+    #     elmo_output = self.sess.run(self.elmo_output, feed_dict)
 
 
 

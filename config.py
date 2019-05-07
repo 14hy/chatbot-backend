@@ -2,22 +2,30 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-TEST = {
-    'vocab_file': os.path.join(BASE_DIR, './ckpt/vocab_mecab+khaiii_noBPE_5888'),
+PREPROCESS = {
+    'vocab_file': os.path.join(BASE_DIR, '../squad_train_model/vocab-9171.txt'),
+    'use_morphs': True,
     'max_seq_length': 25,
     'max_query_length': 25,
-    'model_path': os.path.join(BASE_DIR, '../data/model_1/model.ckpt-100000'),
-    'bert_json': os.path.join(BASE_DIR, './ckpt/bert_config.json'),
-    'categories': ['셔틀', '밥', '잡담', '학사행정', '검색'],
-    'feature_layers': -2,
-    'distance': 'manhattan', # euclidean, manhattan
-    'use_morphs': True
 }
 
-DEFAULT_CONFIG = TEST
+BERT = {
+    'model_path': os.path.join(BASE_DIR, '../squad_train_model/model.ckpt-11000'),
+    'bert_json': os.path.join(BASE_DIR, '../squad_train_model/bert_config.json'),
+    'feature_layers': -2,
+    'max_seq_length': 25,
+    'max_query_length': 25,
+}
 
-MONGODB_CONFIG = {
+HANDLER = {
+    'distance': 'manhattan'  # euclidean, manhattan
+}
 
+QUESTION = {
+    'categories': ['shuttle_bus', 'food', 'talk', 'search', 'book']
+}
+
+MONGODB = {
     'local_ip': 'localhost',
     'port': 27017,
     'db_name': 'chatbot',

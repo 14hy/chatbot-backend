@@ -24,7 +24,7 @@ class QuestionMaker(object):
 
     def __init__(self):
 
-        self.DEFAULT_CONFIG = config.DEFAULT_CONFIG
+        self.CONFIG = config.QUESTION
 
         self.preprocessor = PreProcessor()
 
@@ -38,7 +38,7 @@ class QuestionMaker(object):
         :param answer: 정답/ None
         :return: Question object
         '''
-        categories = self.DEFAULT_CONFIG['categories']
+        categories = self.CONFIG['categories']
 
         # if category not in categories: # TODO 기능이 구체화 되면 다시 사용
         #     raise Exception('category must be ', categories)

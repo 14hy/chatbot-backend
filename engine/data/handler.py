@@ -14,9 +14,6 @@ from engine.model.bert import Model
 from engine.services.shuttle import ShuttleBus
 from engine.utils import Singleton
 
-DEFAULT_CONFIG = config.DEFAULT_CONFIG
-
-
 def cosine_similarity(a, b):
     '''
     성능이 좋지 않다. 모두 각도가 거의 비슷.
@@ -59,7 +56,7 @@ class QueryMaker():
         self.preprocessor = PreProcessor()
         self.bert_model = Model()
 
-        self.DEFAULT_CONFIG = config.DEFAULT_CONFIG
+        self.DEFAULT_CONFIG = config.HANDLER
 
     def make_query(self, chat):
         def get_top(distances, top=1, threshold=0.5):
@@ -220,6 +217,8 @@ class ChatHandler(metaclass=Singleton):
             return {'mode': 'food', 'response': 'Preparing for food...'}
         elif category == 'book':
             return {'mode': 'book', 'response': 'Taeuk will do'}
+        elif category == 'search':
+            return {'mode': 'search', }
 
 
 if __name__ == '__main__':

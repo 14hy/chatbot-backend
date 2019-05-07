@@ -10,7 +10,7 @@ from engine.utils import Singleton
 class PymongoWrapper(metaclass=Singleton):
     def __init__(self):
 
-        self.MONGODB_CONFIG = config.MONGODB_CONFIG
+        self.MONGODB_CONFIG = config.MONGODB
 
         _client = MongoClient(host=self.MONGODB_CONFIG['local_ip'],
                               port=self.MONGODB_CONFIG['port'],
