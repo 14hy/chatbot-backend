@@ -3,6 +3,7 @@ from flask_restplus import reqparse, fields, inputs
 from flask import Response
 from api.common.settings import *
 from engine.db.questions import index as questions
+from engine.db.contexts import index as contexts
 from engine.main import Engine
 
 backend = Engine()
@@ -26,7 +27,7 @@ class CategorizeChat(Resource):
 
 
 @v1.route('/db/questions/add')
-class Manager(Resource):
+class Questions(Resource):
 
     @v1.doc('질문 추가', params={'text': '등록 할 질문', 'answer': '등록 할 답변(default=None)', 'category': '카테고리'})
     def post(self):
@@ -40,7 +41,26 @@ class Manager(Resource):
             _text = args['text']
             _answer = args['answer']
             _category = args['category']
-            questions.create_and_insert(_text, _answer, _category)
+            questions.create_insert(_text, _answer, _category)
+            return {'status': 'Success'}
+        except Exception as err:
+            print(err)
+            return {'error': str(err)}
+
+@v1.route('/db/contexts/add')
+class Contexts(Resource):
+
+    @v1.doc('문단 추가', params={'subject': '등록 할 문단의 주제', 'text': '등록 할 문단'})
+    def post(self):
+        try:
+            parser = reqparse.RequestParser()
+            parser.add_argument('subject', type=str, help='등록 할 문단의 주제')
+            parser.add_argument('text', type=str, required=True, help='등록 할 문단')
+            args = parser.parse_args(strict=True)
+
+            _subject = args['subject']
+            _text = args['text']
+            contexts.create_insert(text=_text, subject=_subject)
             return {'status': 'Success'}
         except Exception as err:
             print(err)
@@ -73,6 +93,7 @@ class Shuttle(Resource):
             print(err)
             return {'error': str(err)}
 
+    @v1.doc('셔틀 버스 정보 조회(현재시간)')
     def get(self):
         try:
             return backend.get_shuttle(current=True)
