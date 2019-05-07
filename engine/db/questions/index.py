@@ -8,7 +8,7 @@ _questions = db[MONGODB_CONFIG['col_questions']]
 _question_maker = QuestionMaker()
 
 
-def create_and_insert(text, answer=None, category=None):
+def create_insert(text, answer=None, category=None):
     question = _question_maker.create_question(text, answer=answer, category=category)
     return insert(question)
 
