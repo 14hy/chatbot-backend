@@ -55,6 +55,8 @@ class Handler(metaclass=Singleton):
 
         if not matched_question.answer:
             answer = self.answer_by_category(query)
+        else:
+            answer = matched_question.answer
 
         queries.insert(query)
 
