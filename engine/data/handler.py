@@ -1,10 +1,7 @@
 # 1. 질문이 들어오면 저장
 # 2. 질문 전처리 및 특징 추출
 # 3. 질문 분류 및
-from collections import OrderedDict
 from pprint import pprint
-
-import numpy as np
 
 import config
 from engine.data.preprocess import PreProcessor
@@ -12,40 +9,7 @@ from engine.data.query import QueryMaker
 from engine.services.search import Search
 from engine.services.shuttle import ShuttleBus
 from engine.utils import Singleton
-
-
-def cosine_similarity(a, b):
-    '''
-    성능이 좋지 않다. 모두 각도가 거의 비슷.
-    :param a:
-    :param b:
-    :return:
-    '''
-    a = np.reshape(a, newshape=(-1))
-    b = np.reshape(b, newshape=(-1))
-    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
-
-
-def manhattan_distance(a, b):
-    '''
-    :param a: sentence vector, [1, 768]
-    :param b:
-    :return:
-    '''
-    a = np.reshape(a, newshape=(-1))
-    b = np.reshape(b, newshape=(-1))
-    return 1 + np.sum(np.abs(a - b))
-
-
-def euclidean_distance(a, b):
-    '''
-    :param a:
-    :param b:
-    :return:
-    '''
-    a = np.reshape(a, newshape=(-1))
-    b = np.reshape(b, newshape=(-1))
-    return 1 + np.linalg.norm(np.sqrt(np.dot((a - b), (a - b))))
+from engine.db.queries import index as queries
 
 
 class Handler(metaclass=Singleton):
@@ -54,6 +18,7 @@ class Handler(metaclass=Singleton):
     '''
 
     def __init__(self):
+        self.CONFIG = config.HANDLER
         self.query_maker = QueryMaker()
         self._service_shuttle = ShuttleBus()
         self._service_search = Search()
@@ -74,17 +39,24 @@ class Handler(metaclass=Singleton):
         query = self.query_maker.make_query(chat)
         matched_question = query.matched_question
         morphs = self.preprocessor.get_morphs(chat)
-        if not matched_question.answer:
-            answer = self.answer_by_category(query)
 
         if query.jaccard_similarity:
             distance = query.jaccard_similarity
             measurement = 'jaccard_similiarity'
+            query.category = matched_question.category
         elif query.manhattan_similarity:
             distance = query.manhattan_similarity
             measurement = 'manhattan_similarity'
+            query.category = matched_question.category
+            if distance >= self.CONFIG['search_threshold']:
+                query.category = 'search'
         else:
-            raise Exception('Query Distance가 모두 0')
+            raise Exception('Query distance Error!')
+
+        if not matched_question.answer:
+            answer = self.answer_by_category(query)
+
+        queries.insert(query)
 
         return self.create_answer(answer, morphs, distance, measurement)
 
@@ -101,9 +73,9 @@ class Handler(metaclass=Singleton):
         elif category == 'book':
             return {'mode': 'book', 'response': 'Taeuk will do'}
         elif category == 'search':
-            response = self._service_search.response(query.chat)
-            return {'mode': 'search', 'response': 'search result',
-                    'context': '어디에서 찾았는지', 'confidence': '정확도'}
+            response, context, tfidf_score = self._service_search.response(query.chat)
+            return {'mode': 'search', 'response': response,
+                    'context': context, 'tfidf_score': tfidf_score}
 
 
 if __name__ == '__main__':
