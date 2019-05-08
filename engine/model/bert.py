@@ -10,6 +10,7 @@ import tensorflow as tf
 import numpy as np
 
 import config
+from engine.data.preprocess import PreProcessor
 from engine.utils import Singleton
 
 
@@ -572,6 +573,7 @@ def tranformer_model(input_tensor, attention_mask, hidden_size, num_hidden_layer
 class Model(metaclass=Singleton):
     def __init__(self):
         self.CONFIG = config.BERT
+        self.preprocessor = PreProcessor()
 
         # placeholders
         self.input_ids = None
@@ -695,16 +697,21 @@ class Model(metaclass=Singleton):
             if var.name in initialized_variable_names:
                 print(var.name, ' - INIT FROM CKPT')
 
-    def predict(self, feature):
+    def _convert_to_feature(self, chat, context):
+        return self.preprocessor.create_InputFeature(chat, context=context)
 
-        feed_dict = {self.input_ids: np.array(feature.input_ids).reshape((1, -1)),
-                     self.input_masks: np.array(feature.input_mask).reshape(1, -1),
-                     self.segment_ids: np.array(feature.segment_ids).reshape(1, -1)}
+    def predict(self, chat, text):
+
+        input_feature = self._convert_to_feature(chat, text)
+
+        feed_dict = {self.input_ids: np.array(input_feature.input_ids).reshape((1, -1)),
+                     self.input_masks: np.array(input_feature.input_mask).reshape(1, -1),
+                     self.segment_ids: np.array(input_feature.segment_ids).reshape(1, -1)}
 
         start, end = self.sess.run([self.start_pred, self.end_pred], feed_dict)
         # start_n, end_n = sess.run([start_n_best, end_n_best], feed_dict) # TODO n best answers
 
-        return start, end
+        return self.preprocessor.idx_to_orig(start, end, input_feature)
 
     def extract_feature_vector(self, input_feature):
         '''
