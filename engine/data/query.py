@@ -11,7 +11,6 @@ from engine.db.queries import index as queries
 from engine.db.questions import index as questions
 
 
-
 def cosine_similarity(a, b):
     '''
     성능이 좋지 않다. 모두 각도가 거의 비슷.
@@ -45,6 +44,7 @@ def euclidean_distance(a, b):
     b = np.reshape(b, newshape=(-1))
     return 1 + np.linalg.norm(np.sqrt(np.dot((a - b), (a - b))))
 
+
 class QueryMaker():
 
     def __init__(self):
@@ -55,14 +55,14 @@ class QueryMaker():
         self.CONFIG = config.QUERY
 
     def make_query(self, chat):
-        def get_top(distances, top=1, threshold=0.5):
+        def get_top(distances):
             assert type(distances) is OrderedDict
             output = {}
 
             for n, each in enumerate(list(distances.items())):
                 item = each[0]
                 distance = each[1]
-                if distance >= threshold:
+                if distance >= self.CONFIG['jaccard_threshold']:
                     question_matched = questions.find_by_text(item)
                     output[n] = (question_matched, distance)
 
@@ -138,7 +138,7 @@ class QueryMaker():
         assert feature_vector is not None
 
         question_list = questions.find_by_keywords(keywords=keywords)
-        if not question_list: # 걸리는 키워드가 없는 경우 모두 다 비교
+        if not question_list:  # 걸리는 키워드가 없는 경우 모두 다 비교
             question_list = questions.find_all()
 
         distances = {}

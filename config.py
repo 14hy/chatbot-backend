@@ -34,7 +34,7 @@ BERT = {
 # }
 
 HANDLER = {
-    'search_threshold': 400 # search_threshold 이 값보다 클 시 search category로 넘어간다.
+    'search_threshold': 400  # search_threshold 이 값보다 클 시 search category로 넘어간다.
 }
 
 QUESTION = {
@@ -47,6 +47,7 @@ SEARCH = {
 
 QUERY = {
     'distance': 'manhattan',
+    'jaccard_threshold': 0.5
 }
 
 MONGODB = {
