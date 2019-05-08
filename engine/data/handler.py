@@ -61,8 +61,7 @@ class Handler(metaclass=Singleton):
         return self.create_answer(answer, morphs, distance, measurement)
 
     def answer_by_category(self, query):
-        matched_question = query.matched_question
-        category = matched_question.category
+        category = query.category
 
         if category == 'shuttle_bus':
             return self._service_shuttle.response()
