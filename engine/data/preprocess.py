@@ -179,14 +179,10 @@ class PreProcessor(metaclass=Singleton):
 
         orig_start = tok_to_orig_map[start[0]]
         orig_end = tok_to_orig_map[end[0]]
-        # for i in range(start[0], end[0] + 1):
-        #     vocab_idx = feature.input_ids[i]
-        #     word = self.vocab[vocab_idx]
-        #     if '#' in word:
-        #         pred_answer_text += word.strip('#')
-        #     else:
-        #         pred_answer_text += ' ' + word
         orig_text = doc_tokens[orig_start:orig_end + 1]
+        if orig_start > orig_end:
+            orig_text = doc_tokens[orig_end:orig_start + 1]
+            # 모델 성능 때문에 start가 더 높게 나오는 경우가 있음
         orig_text = ' '.join(orig_text)
         return self.clean_orig(orig_text)
 
