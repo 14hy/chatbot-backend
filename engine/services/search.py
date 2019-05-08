@@ -31,7 +31,7 @@ class Search(metaclass=Singleton):
         return self.model.predict(chat, text), text, score
 
     def set_tfidf_matrix(self):
-        text_list = list(map(lambda x: ' '.join(self.preprocessor.get_keywords(x['text'], CONFIG['keywords_tags'])),
+        text_list = list(map(lambda x: ' '.join(self.preprocessor.get_keywords(x['text'])),
                              self.contexts_list))
         self.tfidf_matrix = self.tfidf_vectorizer.fit_transform(text_list).todense().tolist()
 
