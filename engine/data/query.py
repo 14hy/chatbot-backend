@@ -1,5 +1,7 @@
 from collections import OrderedDict
 
+import numpy as np
+
 import config
 from engine.data.preprocess import PreProcessor
 from engine.db.queries.query import Query
@@ -9,6 +11,40 @@ from engine.db.queries import index as queries
 from engine.db.questions import index as questions
 
 
+
+def cosine_similarity(a, b):
+    '''
+    성능이 좋지 않다. 모두 각도가 거의 비슷.
+    :param a:
+    :param b:
+    :return:
+    '''
+    a = np.reshape(a, newshape=(-1))
+    b = np.reshape(b, newshape=(-1))
+    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+
+def manhattan_distance(a, b):
+    '''
+    :param a: sentence vector, [1, 768]
+    :param b:
+    :return:
+    '''
+    a = np.reshape(a, newshape=(-1))
+    b = np.reshape(b, newshape=(-1))
+    return 1 + np.sum(np.abs(a - b))
+
+
+def euclidean_distance(a, b):
+    '''
+    :param a:
+    :param b:
+    :return:
+    '''
+    a = np.reshape(a, newshape=(-1))
+    b = np.reshape(b, newshape=(-1))
+    return 1 + np.linalg.norm(np.sqrt(np.dot((a - b), (a - b))))
+
 class QueryMaker():
 
     def __init__(self):
@@ -16,7 +52,7 @@ class QueryMaker():
         self.preprocessor = PreProcessor()
         self.bert_model = Model()
 
-        self.CONFIG = config.HANDLER
+        self.CONFIG = config.QUERY
 
     def make_query(self, chat):
         def get_top(distances, top=1, threshold=0.5):
@@ -53,13 +89,11 @@ class QueryMaker():
             matched_question, jaccard_similarity = get_one(jaccard_distances)
 
         query = Query(chat=chat,
-                       feature_vector=feature_vector,
-                       keywords=keywords,
-                       matched_question=matched_question,
-                       manhattan_similarity=manhattan_similarity,
-                       jaccard_similarity=jaccard_similarity)
-
-        queries.insert(query)
+                      feature_vector=feature_vector,
+                      keywords=keywords,
+                      matched_question=matched_question,
+                      manhattan_similarity=manhattan_similarity,
+                      jaccard_similarity=jaccard_similarity)
 
         return query
 
@@ -93,3 +127,31 @@ class QueryMaker():
     def get_feature_vector(self, text):
         input_feature = self.preprocessor.create_InputFeature(text)
         return self.bert_model.extract_feature_vector(input_feature)
+
+    def get_feature_distances(self, chat, feature_vector, keywords):
+        '''
+        :param chat:
+        :param feature_vector:
+        :param keywords:
+        :return:
+        '''
+        assert feature_vector is not None
+
+        question_list = questions.find_by_keywords(keywords=keywords)
+        if not question_list: # 걸리는 키워드가 없는 경우 모두 다 비교
+            question_list = questions.find_all()
+
+        distances = {}
+
+        for question in question_list:
+            a = feature_vector
+            b = question.feature_vector
+            if self.CONFIG['distance'] == 'manhattan':
+                distance = manhattan_distance(a, b)
+            elif self.CONFIG['distance'] == 'euclidean':
+                distance = euclidean_distance(a, b)
+            else:
+                raise Exception('CONFIG distance  measurement Error!')
+            distances[question.text] = distance
+
+        return OrderedDict(sorted(distances.items(), key=lambda t: t[1]))
