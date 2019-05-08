@@ -595,9 +595,8 @@ class Model(metaclass=Singleton):
 
         self.build_model()
 
-    def build_model(self):  # TODO 클래스 param 변수
+    def build_model(self):
         '''
-
         :return:
         '''
         bert_json = self.CONFIG['bert_json']
@@ -725,7 +724,7 @@ class Model(metaclass=Singleton):
                      self.input_masks: np.array(input_feature.input_mask).reshape(1, -1),
                      self.segment_ids: np.array(input_feature.segment_ids).reshape(1, -1)}
         sequence_output = self.sess.run(self.sequence_output, feed_dict)
-        feature_vector = np.mean(sequence_output[:, 1:length-1], axis=1) # [CLS] 와 [SEP]를 제외한 단어 벡터들을 더함
+        feature_vector = np.mean(sequence_output[:, 1:length - 1], axis=1)  # [CLS] 와 [SEP]를 제외한 단어 벡터들을 더함
         toc = time.time()
         print('*** Vectorizing Done: %5.3f ***' % (toc - tic))
         return np.reshape(feature_vector, newshape=(-1))
@@ -736,7 +735,6 @@ class Model(metaclass=Singleton):
     #                  self.input_masks: np.array(input_feature.input_mask).reshape(1, -1),
     #                  self.segment_ids: np.array(input_feature.segment_ids).reshape(1, -1)}
     #     elmo_output = self.sess.run(self.elmo_output, feed_dict)
-
 
 
 if __name__ == "__main__":
