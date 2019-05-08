@@ -34,7 +34,7 @@ BERT = {
 # }
 
 HANDLER = {
-    'distance': 'manhattan'  # euclidean, manhattan
+    'search_threshold': 400 # search_threshold 이 값보다 클 시 search category로 넘어간다.
 }
 
 QUESTION = {
@@ -43,6 +43,10 @@ QUESTION = {
 
 SEARCH = {
     'sublinear_tf': True,
+}
+
+QUERY = {
+    'distance': 'manhattan',
 }
 
 MONGODB = {

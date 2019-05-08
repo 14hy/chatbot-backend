@@ -47,9 +47,9 @@ class Handler(metaclass=Singleton):
         elif query.manhattan_similarity:
             distance = query.manhattan_similarity
             measurement = 'manhattan_similarity'
-            query.category = matched_question.category
-            if distance >= self.CONFIG['search_threshold']:
-                query.category = 'search'
+            # query.category = matched_question.category
+            # if distance >= self.CONFIG['search_threshold']:
+            query.category = 'search'
         else:
             raise Exception('Query distance Error!')
 
