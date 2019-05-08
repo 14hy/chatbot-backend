@@ -24,13 +24,12 @@ class Search(metaclass=Singleton):
 
     def response(self, chat):
         # context TF IDF 로 찾기
-
         context = self.get_context(chat)
         text = context['text']
 
         return self.model.predict(chat, text)
 
-    def set_tfidf_matrix(self, t, d, D):
+    def set_tfidf_matrix(self):
         text_list = list(map(lambda x: ' '.join(self.preprocessor.get_keywords(x['text'])), self.contexts_list))
         self.tfidf_matrix = self.tfidf_vectorizer.fit_transform(text_list).todense().tolist()
 
@@ -59,9 +58,7 @@ class Search(metaclass=Singleton):
         return self.contexts_list[max_context]
 
 
-
 if __name__ == '__main__':
     test = Search()
-    test.set_tfidf_matrix(None, None, None)
     print(test.get_context('하냥이를 제작한 창업 동아리는?'))
-    print(test.response('하냥이를 제작한 창업 동아리는?'))
+    print(test.response('하냥이가 적용 된 곳은?'))
