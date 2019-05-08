@@ -13,16 +13,17 @@ def is_whitespace(c):
     else:
         return False
 
+
 class Example(object):
     def __init__(self, qas_id, question_text, doc_tokens,
-                 orig_answer_text = None, start= None, end = None):
+                 orig_answer_text=None, start=None, end=None):
         self.qas_id = qas_id
         self.question_text = question_text
         self.doc_tokens = doc_tokens
         self.orig_answer_text = orig_answer_text
         self.start = start
         self.end = end
-    
+
     def show(self):
         print('qas_id:', self.qas_id)
         print('question_text:', self.question_text)
@@ -34,17 +35,17 @@ class Example(object):
 
 class InputFeatures(object):
     def __init__(self, unique_id,
-                example_index,
-                tokens,
-                token_to_orig_map,
-                input_ids,
-                doc_span_index = None,
-                token_is_max_context = None,
-                input_mask = None,
-                segment_ids = None,
-                start_position = None,
-                end_position = None,
-                is_impossible=None):
+                 example_index,
+                 tokens,
+                 token_to_orig_map,
+                 input_ids,
+                 doc_span_index=None,
+                 token_is_max_context=None,
+                 input_mask=None,
+                 segment_ids=None,
+                 start_position=None,
+                 end_position=None,
+                 is_impossible=None):
         self.tokens = tokens
         self.token_to_orig_map = token_to_orig_map
         self.token_is_max_context = token_is_max_context
@@ -57,6 +58,7 @@ class InputFeatures(object):
         self.example_index = example_index
         self.unique_id = unique_id
         self.is_impossible = is_impossible
+
     def show(self):
         print('tokens:', self.tokens)
         print('token_to_orig_map:', self.token_to_orig_map)
@@ -70,6 +72,7 @@ class InputFeatures(object):
         print('example_index:', self.example_index)
         print('unique_id:', self.unique_id)
         print('is_impossible:', self.is_impossible)
+
 
 def tokenize(text):
     '''
@@ -92,9 +95,11 @@ def tokenize(text):
 
     return tokens
 
-class Singleton(type):    # Type을 상속받음
-    __instances = {}      # 클래스의 인스턴스를 저장할 속성
-    def __call__(cls, *args, **kwargs):    # 클래스로 인스턴스를 만들 때 호출되는 메서드
-        if cls not in cls.__instances:     # 클래스로 인스턴스를 생성하지 않았는지 확인
-            cls.__instances[cls] = super().__call__(*args, **kwargs) # 생성하지 않았으면 인스턴스를 생성하여 해당 클래스 사전에 저장
-        return cls.__instances[cls]        # 클래스로 인스턴스를 생성했으면 인스턴스 반환
+
+class Singleton(type):  # Type을 상속받음
+    __instances = {}  # 클래스의 인스턴스를 저장할 속성
+
+    def __call__(cls, *args, **kwargs):  # 클래스로 인스턴스를 만들 때 호출되는 메서드
+        if cls not in cls.__instances:  # 클래스로 인스턴스를 생성하지 않았는지 확인
+            cls.__instances[cls] = super().__call__(*args, **kwargs)  # 생성하지 않았으면 인스턴스를 생성하여 해당 클래스 사전에 저장
+        return cls.__instances[cls]  # 클래스로 인스턴스를 생성했으면 인스턴스 반환
