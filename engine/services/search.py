@@ -21,13 +21,14 @@ class Search(metaclass=Singleton):
                                                 sublinear_tf=CONFIG['sublinear_tf'])
         self.preprocessor = PreProcessor()
         self.set_contexts_list()
+        self.set_tfidf_matrix()
 
     def response(self, chat):
         # context TF IDF 로 찾기
-        context = self.get_context(chat)
+        context, score = self.get_context(chat)
         text = context['text']
 
-        return self.model.predict(chat, text)
+        return self.model.predict(chat, text), text, score
 
     def set_tfidf_matrix(self):
         text_list = list(map(lambda x: ' '.join(self.preprocessor.get_keywords(x['text'])), self.contexts_list))
@@ -55,7 +56,7 @@ class Search(metaclass=Singleton):
                 max_context = i
             score = 0
 
-        return self.contexts_list[max_context]
+        return self.contexts_list[max_context], max_score
 
 
 if __name__ == '__main__':
