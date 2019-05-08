@@ -1,9 +1,9 @@
 import os
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = '/home/rhodochrosited/'
 
 PREPROCESS = {
-    'vocab_file': os.path.join(BASE_DIR, '../squad_train_model/vocab-9171.txt'),
+    'vocab_file': os.path.join(BASE_DIR, 'squad_train_model/vocab-9171.txt'),
     'use_morphs': True,
     'max_seq_length': 384,
     'max_query_length': 64,
@@ -12,8 +12,8 @@ PREPROCESS = {
 }
 
 BERT = {
-    'model_path': os.path.join(BASE_DIR, '../squad_train_model/model.ckpt-11000'),
-    'bert_json': os.path.join(BASE_DIR, '../squad_train_model/bert_config.json'),
+    'model_path': os.path.join(BASE_DIR, 'squad_train_model/model.ckpt-11000'),
+    'bert_json': os.path.join(BASE_DIR, 'squad_train_model/bert_config.json'),
     'feature_layers': -2,
     'max_seq_length': 384,
     'max_query_length': 64,
@@ -62,3 +62,4 @@ MONGODB = {
 
 if __name__ == '__main__':
     print(BASE_DIR)
+    print(PREPROCESS)
