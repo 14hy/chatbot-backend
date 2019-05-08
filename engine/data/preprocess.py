@@ -102,6 +102,8 @@ class PreProcessor(metaclass=Singleton):
         tok_to_original_index = []
         orig_to_token_idx = []
         all_doc_tokens = []
+        doc_tokens = None
+        tok_to_orig_map = None
 
         query_tokens = self.str_to_tokens(query_text)
         if len(query_tokens) > max_query_length:
