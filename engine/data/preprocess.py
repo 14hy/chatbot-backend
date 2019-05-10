@@ -30,19 +30,19 @@ def convert_by_vocab(vocab, items):
 class InputFeatures(object):
     def __init__(self,
                  input_ids,
-                 input_mask=None,
+                 input_masks=None,
                  segment_ids=None,
                  doc_tokens=None,
                  tok_to_orig_map=None):
         self.tok_to_orig_map = tok_to_orig_map
         self.input_ids = input_ids
-        self.input_mask = input_mask
+        self.input_masks = input_masks
         self.segment_ids = segment_ids
         self.doc_tokens = doc_tokens
 
     def __str__(self):
-        return 'InputFeature\n input_ids:{}\n input_mask:{}\n segement_ids:{}'.format(self.input_ids, self.input_mask,
-                                                                                      self.segment_ids)
+        return 'InputFeature\n input_ids:{}\n input_masks:{}\n segement_ids:{}'.format(self.input_ids, self.input_masks,
+                                                                                       self.segment_ids)
 
 
 class PreProcessor(metaclass=Singleton):
@@ -89,11 +89,11 @@ class PreProcessor(metaclass=Singleton):
         context is not None:
         input_ids: [CLS] query_text [SEP] context [SEP] [PAD] ...
         segment_ids: [0] [0] [0] [0] [0] [1] [1] [1] [1] [0] ...
-        input_mask:  [1] [1] [1] [1] [1] [1] [1] [1] [1] [0] ...
+        input_masks:  [1] [1] [1] [1] [1] [1] [1] [1] [1] [0] ...
         context is None:
         input_ids: [CLS] query_text [SEP] [PAD] ...
         segment_ids: [0] [0] [0] [0] [0] [0] [0] ...
-        input_mask:  [1] [1] [1] [1] [1] [1] [0] ...
+        input_masks:  [1] [1] [1] [1] [1] [1] [0] ...
         '''
 
         max_query_length = self.CONFIG['max_query_length']
@@ -110,7 +110,7 @@ class PreProcessor(metaclass=Singleton):
             query_tokens = query_tokens[0:max_query_length]
 
         input_ids = []
-        input_mask = []
+        input_masks = []
         segment_ids = []
 
         input_ids.append('[CLS]')
@@ -151,10 +151,10 @@ class PreProcessor(metaclass=Singleton):
         _length = len(input_ids)
 
         for _ in range(_length):
-            input_mask.append(1)
+            input_masks.append(1)
 
         for _ in range(max_seq_length - _length):
-            input_mask.append(0)
+            input_masks.append(0)
             segment_ids.append(0)
             input_ids.append(0)  # 0 = [PAD]
 
@@ -165,7 +165,7 @@ class PreProcessor(metaclass=Singleton):
         # input_ids = self.tokens_to_idx(input_ids)
 
         feature = InputFeatures(input_ids=input_ids,
-                                input_mask=input_mask,
+                                input_masks=input_masks,
                                 segment_ids=segment_ids,
                                 doc_tokens=doc_tokens,
                                 tok_to_orig_map=tok_to_orig_map)

@@ -64,7 +64,7 @@ class InputFeatures(object):
         print('token_to_orig_map:', self.token_to_orig_map)
         print('token_is_max_context:', self.token_is_max_context)
         print('input_ids:', self.input_ids)
-        print('input_mask:', self.input_mask)
+        print('input_masks:', self.input_mask)
         print('segment_ids:', self.segment_ids)
         print('start_position:', self.start_position)
         print('end_position:', self.end_position)

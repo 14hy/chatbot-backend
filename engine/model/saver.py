@@ -704,7 +704,7 @@ class Model(metaclass=Singleton):
         input_feature = self._convert_to_feature(chat, text)
 
         feed_dict = {self.input_ids: np.array(input_feature.input_ids).reshape((1, -1)),
-                     self.input_masks: np.array(input_feature.input_mask).reshape(1, -1),
+                     self.input_masks: np.array(input_feature.input_masks).reshape(1, -1),
                      self.segment_ids: np.array(input_feature.segment_ids).reshape(1, -1)}
 
         start, end = self.sess.run([self.start_pred, self.end_pred], feed_dict)
@@ -719,9 +719,9 @@ class Model(metaclass=Singleton):
         :return:
         '''
         tic = time.time()
-        length = np.sum(input_feature.input_mask)
+        length = np.sum(input_feature.input_masks)
         feed_dict = {self.input_ids: np.array(input_feature.input_ids).reshape((1, -1)),
-                     self.input_masks: np.array(input_feature.input_mask).reshape(1, -1),
+                     self.input_masks: np.array(input_feature.input_masks).reshape(1, -1),
                      self.segment_ids: np.array(input_feature.segment_ids).reshape(1, -1)}
         sequence_output = self.sess.run(self.sequence_output, feed_dict)
         feature_vector = np.mean(sequence_output[:, 1:length - 1], axis=1)  # [CLS] 와 [SEP]를 제외한 단어 벡터들을 더함
@@ -732,7 +732,7 @@ class Model(metaclass=Singleton):
     # def extract_elmo_feature_vector(self, input_feature):
     #     tic = time.time()
     #     feed_dict = {self.input_ids: np.array(input_feature.input_ids).reshape((1, -1)),
-    #                  self.input_masks: np.array(input_feature.input_mask).reshape(1, -1),
+    #                  self.input_masks: np.array(input_feature.input_masks).reshape(1, -1),
     #                  self.segment_ids: np.array(input_feature.segment_ids).reshape(1, -1)}
     #     elmo_output = self.sess.run(self.elmo_output, feed_dict)
 
