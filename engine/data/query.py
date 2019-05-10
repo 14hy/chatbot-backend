@@ -55,7 +55,7 @@ class QueryMaker():
         self.CONFIG = config.QUERY
 
     def make_query(self, chat):
-        def get_top(distances):
+        def get_top(distances, top=1):
             assert type(distances) is OrderedDict
             output = {}
 
