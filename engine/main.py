@@ -1,8 +1,6 @@
-from pprint import pprint
 from time import time
 
 from engine.data.handler import Handler
-from engine.model.bert import Model
 from engine.services.shuttle import ShuttleBus
 
 
