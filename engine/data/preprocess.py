@@ -95,9 +95,12 @@ class PreProcessor(metaclass=Singleton):
         segment_ids: [0] [0] [0] [0] [0] [0] [0] ...
         input_masks:  [1] [1] [1] [1] [1] [1] [0] ...
         '''
-
-        max_query_length = self.CONFIG['max_query_length']
-        max_seq_length = self.CONFIG['max_seq_length']
+        if not context:
+            max_query_length = self.CONFIG['max_query_length-similarity']
+            max_seq_length = max_query_length
+        else:
+            max_query_length = self.CONFIG['max_query_length-search']
+            max_seq_length = self.CONFIG['max_seq_length-search']
 
         tok_to_original_index = []
         orig_to_token_idx = []
@@ -177,8 +180,8 @@ class PreProcessor(metaclass=Singleton):
         tok_to_orig_map = feature.tok_to_orig_map
         doc_tokens = feature.doc_tokens
 
-        orig_start = tok_to_orig_map[start[0]]
-        orig_end = tok_to_orig_map[end[0]]
+        orig_start = tok_to_orig_map[start]
+        orig_end = tok_to_orig_map[end]
         orig_text = doc_tokens[orig_start:orig_end + 1]
         if orig_start > orig_end:
             orig_text = doc_tokens[orig_end:orig_start + 1]

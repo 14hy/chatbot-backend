@@ -1,11 +1,11 @@
 import collections
 import json
 import math
+import os
 import re
 import sys
+import tempfile
 import time
-from pprint import pprint
-
 import tensorflow as tf
 import numpy as np
 
@@ -570,8 +570,13 @@ def tranformer_model(input_tensor, attention_mask, hidden_size, num_hidden_layer
         return final_output
 
 
-class Model(metaclass=Singleton):
-    def __init__(self):
+class Model(object):
+    def __init__(self, mode):
+        '''
+
+        :param mode: 0: search, 1: similarty
+        '''
+        self.mode = mode
         self.CONFIG = config.BERT
         self.preprocessor = PreProcessor()
 
@@ -581,6 +586,8 @@ class Model(metaclass=Singleton):
         self.segment_ids = None
 
         # pred indexes
+        self.start_logits = None
+        self.end_logtis = None
         self.start_pred = None
         self.end_pred = None
 
@@ -591,17 +598,19 @@ class Model(metaclass=Singleton):
         self.all_encoder_layers = None
         self.pooled_output = None
         self.feature_vector = None
-        self.sequence_output = None
+        self.similarity_output = None
 
         self.build_model()
 
     def build_model(self):
-        '''
-        :return:
-        '''
-        bert_json = self.CONFIG['bert_json']
-        model_path = self.CONFIG['model_path']
-        max_seq_length = self.CONFIG['max_seq_length']
+        if self.mode == 0:
+            bert_json = self.CONFIG['bert_json']
+            model_path = self.CONFIG['model_path-search']
+            max_seq_length = self.CONFIG['max_seq_length-search']
+        elif self.mode == 1:
+            bert_json = self.CONFIG['bert_json-ef']  # TODO 임시
+            model_path = self.CONFIG['model_path-similarity']
+            max_seq_length = self.CONFIG['max_seq_length-similarity']
 
         bert_config = BertConfig()
         bert_config.read_from_json_file(bert_json)
@@ -613,7 +622,7 @@ class Model(metaclass=Singleton):
         embedding_output = None  # sum of Token, segment, position
         embedding_table = None  # id embedding table
         self.all_encoder_layers = None  # transformer model
-        self.sequence_output = None  # output layer
+        self.similarity_output = None  # output layer
         self.elmo_output = None  # ELMO FEATURE 추출을 위한 레이어
 
         with tf.variable_scope(name_or_scope=None, default_name='bert'):
@@ -647,18 +656,18 @@ class Model(metaclass=Singleton):
                                                            initializer_range=bert_config.initializer_range,
                                                            do_return_all_layers=True)
 
-                self.sequence_output = self.all_encoder_layers[self.CONFIG['feature_layers']]
+                self.similarity_output = self.all_encoder_layers[self.CONFIG['similarity_layer']]
                 self.elmo_output = self.all_encoder_layers[-1]
 
             with tf.variable_scope('pooler'):
-                first_token_tensor = tf.squeeze(self.sequence_output[:, 0:1, :], axis=1)
+                first_token_tensor = tf.squeeze(self.similarity_output[:, 0:1, :], axis=1)
                 self.pooled_output = tf.layers.dense(inputs=first_token_tensor,
                                                      units=bert_config.hidden_size,
                                                      activation=tf.nn.tanh,
                                                      kernel_initializer=tf.truncated_normal_initializer(
                                                          bert_config.initializer_range))
 
-        final_layer = self.sequence_output
+        final_layer = self.similarity_output
 
         output_weights = tf.get_variable('cls/squad/output_weights',
                                          shape=[2, bert_config.hidden_size],
@@ -675,11 +684,11 @@ class Model(metaclass=Singleton):
 
         unstacked_logits = tf.unstack(logits, axis=0)
 
-        start_logits = unstacked_logits[0]
-        end_logtis = unstacked_logits[1]
+        self.start_logits = unstacked_logits[0]
+        self.end_logtis = unstacked_logits[1]
 
-        self.start_pred = tf.argmax(start_logits, axis=-1)
-        self.end_pred = tf.argmax(end_logtis, axis=-1)
+        self.start_pred = tf.argmax(self.start_logits, axis=-1)
+        self.end_pred = tf.argmax(self.end_logtis, axis=-1)
 
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())
@@ -713,17 +722,12 @@ class Model(metaclass=Singleton):
         return self.preprocessor.idx_to_orig(start, end, input_feature)
 
     def extract_feature_vector(self, input_feature):
-        '''
-
-        :param input_feature: InputFeature
-        :return:
-        '''
         tic = time.time()
         length = np.sum(input_feature.input_masks)
         feed_dict = {self.input_ids: np.array(input_feature.input_ids).reshape((1, -1)),
                      self.input_masks: np.array(input_feature.input_masks).reshape(1, -1),
                      self.segment_ids: np.array(input_feature.segment_ids).reshape(1, -1)}
-        sequence_output = self.sess.run(self.sequence_output, feed_dict)
+        sequence_output = self.sess.run(self.similarity_output, feed_dict)
         feature_vector = np.mean(sequence_output[:, 1:length - 1], axis=1)  # [CLS] 와 [SEP]를 제외한 단어 벡터들을 더함
         toc = time.time()
         print('*** Vectorizing Done: %5.3f ***' % (toc - tic))
@@ -736,6 +740,123 @@ class Model(metaclass=Singleton):
     #                  self.segment_ids: np.array(input_feature.segment_ids).reshape(1, -1)}
     #     elmo_output = self.sess.run(self.elmo_output, feed_dict)
 
+    def search_to_saved_model(self):
+        MODEL_DIR = tempfile.gettempdir()
+        version = 1
+        export_path = os.path.join(MODEL_DIR, 'search', str(version))
+        print('export_path = {}\n'.format(export_path))
+        if os.path.isdir(export_path):
+            print('\nAlready saved a model, cleaning up\n')
+            return
+        builder = tf.saved_model.builder.SavedModelBuilder(export_path)
+
+        input_ids = tf.saved_model.utils.build_tensor_info(self.input_ids)
+        input_masks = tf.saved_model.utils.build_tensor_info(self.input_masks)
+        segment_ids = tf.saved_model.utils.build_tensor_info(self.segment_ids)
+
+        start_pred = tf.saved_model.utils.build_tensor_info(self.start_logits)
+        end_pred = tf.saved_model.utils.build_tensor_info(self.end_logtis)
+
+        prediction_signature = (
+            tf.saved_model.signature_def_utils.build_signature_def(
+                inputs={'input_ids': input_ids,
+                        'input_masks': input_masks,
+                        'segment_ids': segment_ids},
+                outputs={'start_pred': start_pred,
+                         'end_pred': end_pred},
+                method_name=tf.saved_model.signature_constants.PREDICT_METHOD_NAME))
+
+        signature_def_map = {
+            tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY: prediction_signature
+        }
+
+        builder.add_meta_graph_and_variables(self.sess,
+                                             tags=[tf.saved_model.tag_constants.SERVING],
+                                             signature_def_map=signature_def_map)
+
+        builder.save()
+        print('GENERATED SAVED MODEL')
+
+    def ef_to_saved_model(self):
+        MODEL_DIR = tempfile.gettempdir()
+        version = 1
+        export_path = os.path.join(MODEL_DIR, 'similarity', str(version))
+        print('export_path = {}\n'.format(export_path))
+        if os.path.isdir(export_path):
+            print('\nAlready saved a model, cleaning up\n')
+            return
+        builder = tf.saved_model.builder.SavedModelBuilder(export_path)
+        input_ids = tf.saved_model.utils.build_tensor_info(self.input_ids)
+        input_masks = tf.saved_model.utils.build_tensor_info(self.input_masks)
+        segment_ids = tf.saved_model.utils.build_tensor_info(self.segment_ids)
+
+        similarity_output = tf.saved_model.utils.build_tensor_info(self.similarity_output)
+
+        prediction_signature = (
+            tf.saved_model.signature_def_utils.build_signature_def(
+                inputs={'input_ids': input_ids,
+                        'input_masks': input_masks,
+                        'segment_ids': segment_ids},
+                outputs={'similarity_output': similarity_output},
+                method_name=tf.saved_model.signature_constants.PREDICT_METHOD_NAME))
+
+        signature_def_map = {
+            tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY: prediction_signature
+        }
+
+        builder.add_meta_graph_and_variables(self.sess,
+                                             tags=[tf.saved_model.tag_constants.SERVING],
+                                             signature_def_map=signature_def_map)
+
+        builder.save()
+        print('GENERATED SAVED MODEL')
+
+    def load_saved_model(self, features):
+
+        input_ids = np.array(features.input_ids)
+        input_masks = np.array(features.input_masks)
+        segment_ids = np.array(features.segment_ids)
+
+        input_ids = np.reshape(input_ids, (-1, self.CONFIG['max_seq_length-search']))
+        input_masks = np.reshape(input_masks, (-1, self.CONFIG['max_seq_length-search']))
+        segment_ids = np.reshape(segment_ids, (-1, self.CONFIG['max_seq_length-search']))
+
+        sess = tf.Session()
+        signature_key = tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY
+        placeholder_input_ids = 'input_ids'
+        placeholder_input_masks = 'input_masks'
+        placeholder_segment_ids = 'segment_ids'
+        start_pred = 'start_pred'
+        end_pred = 'end_pred'
+        export_path = '/tmp/1/1'
+
+        meta_graph_def = tf.saved_model.loader.load(sess,
+                                                    [tf.saved_model.tag_constants.SERVING],
+                                                    export_path)
+
+        signature = meta_graph_def.signature_def
+        input_ids_name = signature[signature_key].inputs[placeholder_input_ids].name
+        input_masks_name = signature[signature_key].inputs[placeholder_input_masks].name
+        segment_ids_name = signature[signature_key].inputs[placeholder_segment_ids].name
+        start_pred_name = signature[signature_key].outputs[start_pred].name
+        end_pred_name = signature[signature_key].outputs[end_pred].name
+
+        placeholder_input_ids = sess.graph.get_tensor_by_name(input_ids_name)
+        placeholder_input_masks = sess.graph.get_tensor_by_name(input_masks_name)
+        placeholder_segment_ids = sess.graph.get_tensor_by_name(segment_ids_name)
+        start_pred = sess.graph.get_tensor_by_name(start_pred_name)
+        end_pred = sess.graph.get_tensor_by_name(end_pred_name)
+
+        start, end = sess.run([start_pred, end_pred], {placeholder_input_ids: input_ids,
+                                                       placeholder_input_masks: input_masks,
+                                                       placeholder_segment_ids: segment_ids})
+
+        start = np.argmax(start, axis=-1)
+        end = np.argmax(end, axis=-1)
+
+        return self.preprocessor.idx_to_orig(start, end, features)
+
 
 if __name__ == "__main__":
-    model = Model()
+    model = Model(mode=1)
+    # model.to_saved_model()

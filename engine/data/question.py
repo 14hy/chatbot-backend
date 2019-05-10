@@ -1,17 +1,15 @@
 import config
 from engine.data.preprocess import PreProcessor
 from engine.db.questions.question import Question
-from engine.model.bert import Model
+from engine.model.serving import TensorServer
 
 
 class QuestionMaker(object):
 
     def __init__(self):
         self.CONFIG = config.QUESTION
-
+        self.model_wrapper = TensorServer()
         self.preprocessor = PreProcessor()
-
-        self.bert_model = Model()
 
     def create_question(self, text, category=None, answer=None):
         '''
@@ -26,10 +24,9 @@ class QuestionMaker(object):
         # if category not in categories: # TODO 기능이 구체화 되면 다시 사용
         #     raise Exception('category must be ', categories)
 
-        input_feature = self.preprocessor.create_InputFeature(text)
         keywords = self.preprocessor.get_keywords(text)
         morphs = self.preprocessor.get_morphs(text)
-        feature_vector = self.bert_model.extract_feature_vector(input_feature)
+        feature_vector = self.model_wrapper.similarity(text)
 
         return Question(text, category, answer, feature_vector, keywords, morphs)
 

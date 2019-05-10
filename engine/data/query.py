@@ -5,10 +5,9 @@ import numpy as np
 import config
 from engine.data.preprocess import PreProcessor
 from engine.db.queries.query import Query
-from engine.model.bert import Model
 
-from engine.db.queries import index as queries
 from engine.db.questions import index as questions
+from engine.model.serving import TensorServer
 
 
 def cosine_similarity(a, b):
@@ -50,7 +49,7 @@ class QueryMaker():
     def __init__(self):
 
         self.preprocessor = PreProcessor()
-        self.bert_model = Model()
+        self.modelWrapper = TensorServer()
 
         self.CONFIG = config.QUERY
 
@@ -81,8 +80,8 @@ class QueryMaker():
         manhattan_similarity = None
         jaccard_similarity = None
         if not jaccard_distances:
-            feature_vector = self.get_feature_vector(chat)
-            feature_distances = self.get_feature_distances(chat, feature_vector, keywords)
+            feature_vector = self.modelWrapper.similarity(chat)
+            feature_distances = self.get_feature_distances(feature_vector, keywords)
             top = get_top(feature_distances, top=5)
             matched_question, manhattan_similarity = get_one(top)
         else:
@@ -124,17 +123,7 @@ class QueryMaker():
 
         return OrderedDict(sorted(distance_dict.items(), key=lambda t: t[1], reverse=True))
 
-    def get_feature_vector(self, text):
-        input_feature = self.preprocessor.create_InputFeature(text)
-        return self.bert_model.extract_feature_vector(input_feature)
-
-    def get_feature_distances(self, chat, feature_vector, keywords):
-        '''
-        :param chat:
-        :param feature_vector:
-        :param keywords:
-        :return:
-        '''
+    def get_feature_distances(self, feature_vector, keywords):
         assert feature_vector is not None
 
         question_list = questions.find_by_keywords(keywords=keywords)

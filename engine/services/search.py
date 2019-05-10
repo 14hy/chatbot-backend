@@ -1,9 +1,8 @@
 import config
 from engine.data.preprocess import PreProcessor
-from engine.model.bert import Model
-import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+from engine.model.serving import TensorServer
 from engine.utils import Singleton
 from engine.db.contexts import index as contexts
 
@@ -13,7 +12,6 @@ CONFIG = config.SEARCH
 class Search(metaclass=Singleton):
 
     def __init__(self):
-        self.model = Model()
         self.tfidf_matrix = None
         self.contexts_list = None
 
@@ -22,13 +20,14 @@ class Search(metaclass=Singleton):
         self.preprocessor = PreProcessor()
         self.set_contexts_list()
         self.set_tfidf_matrix()
+        self.tensor_server = TensorServer()
 
     def response(self, chat):
         # context TF IDF 로 찾기
         context, score = self.get_context(chat)
         text = context['text']
 
-        return self.model.predict(chat, text), text, score
+        return self.tensor_server.search(chat, text), text, score
 
     def set_tfidf_matrix(self):
         text_list = list(map(lambda x: ' '.join(self.preprocessor.get_keywords(x['text'])),
