@@ -5,19 +5,27 @@ BASE_DIR = '/home/rhodochrosited/'
 PREPROCESS = {
     'vocab_file': os.path.join(BASE_DIR, 'squad_train_model/vocab-9171.txt'),
     'use_morphs': True,
-    'max_seq_length': 384,
-    'max_query_length': 64,
-    'keywords_tags': ['NNG', 'NNP', 'NNB', 'NNBC'],
+    'max_seq_length-search': 384,
+    'max_query_length-search': 64,
+    'max_query_length-similarity': 25,  # = seq_length
+    'keywords_tags': ['NNG', 'NNP', 'NNB', 'NNBC', 'MAG'],
     'clean_orig_tags': ['JK', 'JX', 'JC']
 }
 
 BERT = {
-    'model_path': os.path.join(BASE_DIR, 'squad_train_model/model.ckpt-11000'),
+    'model_path-search': os.path.join(BASE_DIR, 'squad_train_model/model.ckpt-11000'),
+    'model_path-similarity': os.path.join(BASE_DIR, 'data/model_1/model.ckpt-100000'),
     'bert_json': os.path.join(BASE_DIR, 'squad_train_model/bert_config.json'),
-    'feature_layers': -2,
-    'max_seq_length': 384,
-    'max_query_length': 64,
+    'bert_json-ef': os.path.join(BASE_DIR, 'data/bert_config.json'),
+    'similarity_layer': -2,
+    'max_seq_length-search': 384,
+    'max_seq_length-similarity': 25
 }
+TENSOR_SERVING = {
+    'url-search': 'http://localhost:8501/v1/models/bert-search:predict',
+    'url-similarity': 'http://localhost:8502/v1/models/similarity:predict'
+}
+
 # BERT = {
 #     'model_path': os.path.join(BASE_DIR, '../data/model_1/model.ckpt-100000'),
 #     'bert_json': os.path.join(BASE_DIR, './ckpt/bert_config.json'),
