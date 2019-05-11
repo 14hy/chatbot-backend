@@ -1,8 +1,3 @@
-# 1. 질문이 들어오면 저장
-# 2. 질문 전처리 및 특징 추출
-# 3. 질문 분류 및
-from pprint import pprint
-
 import config
 from engine.data.preprocess import PreProcessor
 from engine.data.query import QueryMaker
@@ -12,10 +7,8 @@ from engine.utils import Singleton
 from engine.db.queries import index as queries
 
 
+
 class Handler(metaclass=Singleton):
-    '''
-    preprocess chat to query
-    '''
 
     def __init__(self):
         self.CONFIG = config.HANDLER
@@ -25,24 +18,20 @@ class Handler(metaclass=Singleton):
         self.preprocessor = PreProcessor()
 
     @staticmethod
-    def create_answer(answer, morphs, distance, measurement):
+    def get_response(answer, morphs, distance, measurement):
         return {"morphs": morphs,  # 형태소 분석 된 결과
                 "measurement": measurement,  # 유사도 측정의 방법, [jaccard, manhattan]
                 "distance": distance,  # 위 유사도의 거리
                 "answer": answer}
 
-    def get_answer(self, chat):
-        '''
-        :param chat: str
-        :return: Query object
-        '''
+    def handle(self, chat):
         query = self.query_maker.make_query(chat)
         matched_question = query.matched_question
         morphs = self.preprocessor.get_morphs(chat)
 
         if query.jaccard_similarity:
             distance = query.jaccard_similarity
-            measurement = 'jaccard_similiarity'
+            measurement = 'jaccard_similarity'
             query.category = matched_question.category
         elif query.manhattan_similarity:
             distance = query.manhattan_similarity
@@ -50,19 +39,20 @@ class Handler(metaclass=Singleton):
             # query.category = matched_question.category
             # if distance >= self.CONFIG['search_threshold']:
             query.category = 'search'
+            matched_question.answer = None  # FOR TEST ONLY
         else:
             raise Exception('Query distance Error!')
 
         if not matched_question.answer:
-            answer = self.answer_by_category(query)
+            answer = self.by_category(query)
         else:
             answer = matched_question.answer
 
         queries.insert(query)
 
-        return self.create_answer(answer, morphs, distance, measurement)
+        return self.get_response(answer, morphs, distance, measurement)
 
-    def answer_by_category(self, query):
+    def by_category(self, query):
         category = query.category
 
         if category == 'shuttle_bus':
@@ -77,8 +67,3 @@ class Handler(metaclass=Singleton):
             response, context, tfidf_score = self._service_search.response(query.chat)
             return {'mode': 'search', 'response': response,
                     'context': context, 'tfidf_score': tfidf_score}
-
-
-if __name__ == '__main__':
-    ch = Handler()
-    pprint(ch.get_answer('셔틀은 대체 언제 옵니까?'))

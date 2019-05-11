@@ -26,21 +26,6 @@ TENSOR_SERVING = {
     'url-similarity': 'http://localhost:8502/v1/models/similarity:predict'
 }
 
-# BERT = {
-#     'model_path': os.path.join(BASE_DIR, '../data/model_1/model.ckpt-100000'),
-#     'bert_json': os.path.join(BASE_DIR, './ckpt/bert_config.json'),
-#     'feature_layers': -2,
-#     'max_seq_length': 25,
-#     'max_query_length': 25,
-# }
-# PREPROCESS = {
-#     'vocab_file': os.path.join(BASE_DIR, './ckpt/vocab_mecab+khaiii_noBPE_5888'),
-#     'use_morphs': True,
-#     'max_seq_length': 25,
-#     'max_query_length': 25,
-#     'keywords_tag': ['NNG', 'NNP', 'NNB', 'NNBC'],
-# }
-
 HANDLER = {
     'search_threshold': 400  # search_threshold 이 값보다 클 시 search category로 넘어간다.
 }

@@ -13,23 +13,24 @@ class TensorServer(metaclass=Singleton):
         self.preprocessor = PreProcessor()
         self.CONFIG = config.TENSOR_SERVING
 
+    @staticmethod
+    def create_request(features):
+        request_json = {
+            'instances': [
+                {
+                    'input_ids': features.input_ids,
+                    'input_masks': features.input_masks,
+                    'segment_ids': features.segment_ids
+                }
+            ]
+        }
+        return request_json
+
     def similarity(self, chat):
         features = self.preprocessor.create_InputFeature(query_text=chat)
         _length = np.sum(features.input_masks)
 
-        def create_request(f):
-            request_json = {
-                'instances': [
-                    {
-                        'input_ids': f.input_ids,
-                        'input_masks': f.input_masks,
-                        'segment_ids': f.segment_ids
-                    }
-                ]
-            }
-            return request_json
-
-        response = requests.post(self.CONFIG['url-similarity'], json=create_request(features))
+        response = requests.post(self.CONFIG['url-similarity'], json=self.create_request(features))
         response = json.loads(response.text)
         similarity_vector = response['predictions'][0]
         similarity_vector = np.mean(np.array(similarity_vector)[1:_length - 1, :], axis=0)
@@ -39,19 +40,7 @@ class TensorServer(metaclass=Singleton):
     def search(self, chat, context):
         features = self.preprocessor.create_InputFeature(chat, context)
 
-        def create_request(f):
-            request_json = {
-                'instances': [
-                    {
-                        'input_ids': f.input_ids,
-                        'input_masks': f.input_masks,
-                        'segment_ids': f.segment_ids
-                    }
-                ]
-            }
-            return request_json
-
-        response = requests.post(self.CONFIG['url-search'], json=create_request(features))
+        response = requests.post(self.CONFIG['url-search'], json=self.create_request(features))
         response = json.loads(response.text)
 
         start = response['predictions'][0]['start_pred']

@@ -10,18 +10,6 @@ from engine.db.questions import index as questions
 from engine.model.serving import TensorServer
 
 
-def cosine_similarity(a, b):
-    '''
-    성능이 좋지 않다. 모두 각도가 거의 비슷.
-    :param a:
-    :param b:
-    :return:
-    '''
-    a = np.reshape(a, newshape=(-1))
-    b = np.reshape(b, newshape=(-1))
-    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
-
-
 def manhattan_distance(a, b):
     '''
     :param a: sentence vector, [1, 768]

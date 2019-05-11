@@ -26,7 +26,7 @@ class Engine(object):
         tic = time()
 
         # TODO Query Feature extractor.
-        answer = self.chat_handler.get_answer(chat)
+        answer = self.chat_handler.handle(chat)
         toc = time()
         # pprint(answer)
 

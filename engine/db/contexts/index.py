@@ -17,4 +17,3 @@ def insert(document):
 def find_all():
     contexts = _contexts.find({})
     return contexts
-    # return list(map(convert_to_context, contexts))

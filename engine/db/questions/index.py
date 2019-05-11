@@ -2,7 +2,7 @@ import pickle
 
 from engine.data.question import QuestionMaker
 from engine.db.index import *
-from engine.db.utils import convert_to_question
+from engine.db.questions.question import convert_to_question
 
 _questions = db[MONGODB_CONFIG['col_questions']]
 _question_maker = QuestionMaker()
@@ -33,19 +33,6 @@ def insert(question):
 
     return _questions.update_one({'text': document['text']}, {'$set': document},
                                  upsert=True)  # update_one -> 중복 삽입을 막기 위해
-
-
-# def read_from_txt(txt='./data/shuttle_bus.txt'):
-#     '''텍스트 파일로 부터 질문을 읽어서 데이터 베이스에 저장,
-#     질문
-#     형식으로 저장
-#     '''
-#     with open(txt, mode='r', encoding='utf8') as f:
-#         for line in f:
-#             tokens = line.strip('\n').split('|')
-#             print(tokens)
-#             q = _question_maker.create_question(tokens[0], answer=tokens[1], category=tokens[2])
-#             insert_question(q)
 
 
 def find_all():
