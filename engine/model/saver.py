@@ -11,7 +11,6 @@ import numpy as np
 
 import config
 from engine.data.preprocess import PreProcessor
-from engine.utils import Singleton
 
 
 def get_assignment_map_from_checkpoint(tvars, init_checkpoint):

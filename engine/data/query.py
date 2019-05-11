@@ -89,13 +89,12 @@ class QueryMaker():
         def get_one(top):
             return top[0][0], top[0][1]
 
+        feature_vector = None
+        manhattan_similarity = None
+
         keywords = self.preprocessor.get_keywords(chat)
         jaccard_similarity = get_top(self.get_jaccard(chat), top=5)
         morphs = self.preprocessor.get_morphs(chat)
-
-        feature_vector = None
-        manhattan_similarity = None
-        jaccard_similarity = None
 
         if not jaccard_similarity:
             feature_vector = self.modelWrapper.similarity(chat)

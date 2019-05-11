@@ -1,5 +1,5 @@
 import config
-from engine.bert.mytokenization import FullTokenizer
+from engine.data.mytokenization import FullTokenizer
 from engine.utils import Singleton
 
 
