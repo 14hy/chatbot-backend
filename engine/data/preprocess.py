@@ -180,14 +180,18 @@ class PreProcessor(metaclass=Singleton):
         tok_to_orig_map = feature.tok_to_orig_map
         doc_tokens = feature.doc_tokens
 
-        orig_start = tok_to_orig_map[start]
-        orig_end = tok_to_orig_map[end]
-        orig_text = doc_tokens[orig_start:orig_end + 1]
-        if orig_start > orig_end:
-            orig_text = doc_tokens[orig_end:orig_start + 1]
-            # 모델 성능 때문에 start가 더 높게 나오는 경우가 있음
-        orig_text = ' '.join(orig_text)
-        return self.clean_orig(orig_text)
+        try:
+
+            orig_start = tok_to_orig_map[start]
+            orig_end = tok_to_orig_map[end]
+            orig_text = doc_tokens[orig_start:orig_end + 1]
+            if orig_start > orig_end:
+                orig_text = doc_tokens[orig_end:orig_start + 1]
+                # 모델 성능 때문에 start가 더 높게 나오는 경우가 있음
+            orig_text = ' '.join(orig_text)
+            return self.clean_orig(orig_text)
+        except Exception as err:
+            return False
 
     def clean_orig(self, orig_text):
         # 조사 제거
