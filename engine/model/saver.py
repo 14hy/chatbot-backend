@@ -159,7 +159,7 @@ def embedding_lookup(input_ids,
                      word_embedding_name='word_embeddings',
                      use_one_hot_embeddings=False):
     '''
-    id<int> => embedding vector<float>[embedding size]
+    id<int> => embedding feature_vector<float>[embedding size]
 
     :param input_ids: int Tensor of shape [batch_size, seq_length]
     :param vocab_size: int.
@@ -608,7 +608,7 @@ class Model(object):
             model_path = self.CONFIG['model_path-search']
             max_seq_length = self.CONFIG['max_seq_length-search']
         elif self.mode == 1:
-            bert_json = self.CONFIG['bert_json-ef']  # TODO 임시
+            bert_json = self.CONFIG['bert_json']
             model_path = self.CONFIG['model_path-similarity']
             max_seq_length = self.CONFIG['max_seq_length-similarity']
 
@@ -742,7 +742,7 @@ class Model(object):
 
     def search_to_saved_model(self):
         MODEL_DIR = tempfile.gettempdir()
-        version = 1
+        version = self.CONFIG['version-search']
         export_path = os.path.join(MODEL_DIR, 'search', str(version))
         print('export_path = {}\n'.format(export_path))
         if os.path.isdir(export_path):
@@ -779,7 +779,7 @@ class Model(object):
 
     def ef_to_saved_model(self):
         MODEL_DIR = tempfile.gettempdir()
-        version = 1
+        version = self.CONFIG['version-similarity']
         export_path = os.path.join(MODEL_DIR, 'similarity', str(version))
         print('export_path = {}\n'.format(export_path))
         if os.path.isdir(export_path):
