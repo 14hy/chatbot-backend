@@ -1,5 +1,5 @@
-from engine.db.contexts.context import *
-from engine.db.index import *
+from src.db.contexts.context import *
+from src.db.index import *
 
 _contexts = db[MONGODB_CONFIG['col_contexts']]
 

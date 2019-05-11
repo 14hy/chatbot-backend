@@ -2,7 +2,7 @@ import pickle
 
 import numpy as np
 
-from engine.db.questions.index import find_by_text
+from src.db.questions.index import find_by_text
 
 
 class Query(object):

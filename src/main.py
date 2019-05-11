@@ -1,7 +1,7 @@
 from time import time
 
-from engine.data.handler import Handler
-from engine.services.shuttle import ShuttleBus
+from src.data.handler import Handler
+from src.services.shuttle import ShuttleBus
 
 
 class Engine(object):

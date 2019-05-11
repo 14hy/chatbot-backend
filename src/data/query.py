@@ -2,13 +2,13 @@ from collections import OrderedDict
 import numpy as np
 from datetime import datetime, timezone
 import config
-from engine.data.preprocess import PreProcessor
-from engine.db.queries.query import Query
+from src.data.preprocess import PreProcessor
+from src.db.queries.query import Query
 
-from engine.db.questions import index as questions
-from engine.model.serving import TensorServer
-from engine.services.search import Search
-from engine.services.shuttle import ShuttleBus
+from src.db.questions import index as questions
+from src.model.serving import TensorServer
+from src.services.search import Search
+from src.services.shuttle import ShuttleBus
 
 UTC = timezone.utc
 

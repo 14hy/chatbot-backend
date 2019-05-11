@@ -1,7 +1,7 @@
 import config
-from engine.data.preprocess import PreProcessor
-from engine.db.questions.question import Question
-from engine.model.serving import TensorServer
+from src.data.preprocess import PreProcessor
+from src.db.questions.question import Question
+from src.model.serving import TensorServer
 
 
 class QuestionMaker(object):

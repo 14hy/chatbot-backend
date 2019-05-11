@@ -3,7 +3,7 @@ from pprint import pprint
 from khaiii import KhaiiiApi
 from mecab import MeCab
 
-from engine.data.tokenization import *
+from src.data.tokenization import *
 
 
 class FullTokenizer(FullTokenizer):

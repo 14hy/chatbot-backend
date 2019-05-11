@@ -1,8 +1,8 @@
 import config
-from engine.data.preprocess import PreProcessor
-from engine.data.query import QueryMaker
-from engine.utils import Singleton
-from engine.db.queries import index as queries
+from src.data.preprocess import PreProcessor
+from src.data.query import QueryMaker
+from src.utils import Singleton
+from src.db.queries import index as queries
 
 
 class Handler(metaclass=Singleton):

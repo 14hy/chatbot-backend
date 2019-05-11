@@ -2,9 +2,9 @@ from flask_restplus import Resource
 from flask_restplus import reqparse, fields, inputs
 from flask import Response
 from api.common.settings import *
-from engine.db.questions import index as questions
-from engine.db.contexts import index as contexts
-from engine.main import Engine
+from src.db.questions import index as questions
+from src.db.contexts import index as contexts
+from src.main import Engine
 
 backend = Engine()
 

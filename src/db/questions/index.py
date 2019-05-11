@@ -1,9 +1,9 @@
 import pickle
 
 import logging
-from engine.data.question import QuestionMaker
-from engine.db.index import *
-from engine.db.questions.question import convert_to_question, convert_to_document
+from src.data.question import QuestionMaker
+from src.db.index import *
+from src.db.questions.question import convert_to_question, convert_to_document
 
 _questions = db[MONGODB_CONFIG['col_questions']]
 _question_maker = QuestionMaker()

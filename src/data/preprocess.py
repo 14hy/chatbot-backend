@@ -1,6 +1,6 @@
 import config
-from engine.data.mytokenization import FullTokenizer
-from engine.utils import Singleton
+from src.data.mytokenization import FullTokenizer
+from src.utils import Singleton
 
 
 def load_vocab_as_list(vocab_file):

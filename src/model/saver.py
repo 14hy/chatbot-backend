@@ -10,7 +10,7 @@ import tensorflow as tf
 import numpy as np
 
 import config
-from engine.data.preprocess import PreProcessor
+from src.data.preprocess import PreProcessor
 
 
 def get_assignment_map_from_checkpoint(tvars, init_checkpoint):

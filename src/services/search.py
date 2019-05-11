@@ -1,10 +1,10 @@
 import config
-from engine.data.preprocess import PreProcessor
+from src.data.preprocess import PreProcessor
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-from engine.model.serving import TensorServer
-from engine.utils import Singleton
-from engine.db.contexts import index as contexts
+from src.model.serving import TensorServer
+from src.utils import Singleton
+from src.db.contexts import index as contexts
 
 CONFIG = config.SEARCH
 

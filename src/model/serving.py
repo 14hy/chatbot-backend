@@ -4,8 +4,8 @@ import numpy as np
 import requests
 
 import config
-from engine.utils import Singleton
-from engine.data.preprocess import PreProcessor
+from src.utils import Singleton
+from src.data.preprocess import PreProcessor
 
 
 class TensorServer(metaclass=Singleton):

@@ -1,6 +1,6 @@
-from engine.data.query import QueryMaker
-from engine.db.index import *
-from engine.db.queries.query import *
+from src.data.query import QueryMaker
+from src.db.index import *
+from src.db.queries.query import *
 
 _queries = db[MONGODB_CONFIG['col_queries']]
 _query_maker = QueryMaker()
