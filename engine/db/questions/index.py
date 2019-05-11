@@ -2,7 +2,7 @@ import pickle
 
 from engine.data.question import QuestionMaker
 from engine.db.index import *
-from engine.db.questions.question import convert_to_question
+from engine.db.questions.question import convert_to_question, convert_to_document
 
 _questions = db[MONGODB_CONFIG['col_questions']]
 _question_maker = QuestionMaker()
@@ -20,16 +20,9 @@ def insert(question):
     '''
 
     if question.feature_vector is None:
-        raise Exception('feature vector is None')
+        raise Exception('feature feature_vector is None')
 
-    feature_vector = pickle.dumps(question.feature_vector)
-
-    document = {'text': question.text,
-                'answer': question.answer,
-                'feature_vector': feature_vector,
-                'category': question.category,
-                'keywords': question.keywords,
-                'morphs': question.morphs}
+    document = convert_to_document(question)
 
     return _questions.update_one({'text': document['text']}, {'$set': document},
                                  upsert=True)  # update_one -> 중복 삽입을 막기 위해
@@ -45,20 +38,9 @@ def find_all():
 
     for document in cursor:
         question = convert_to_question(document)
-        question.object_id = document['_id']
         questions.append(question)
 
     return questions
-
-
-def find_by_id(_id):
-    '''
-
-    :param _id: _id
-    :return: Question object
-    '''
-    document = _questions.find_one({'_id': _id})
-    return convert_to_question(document)
 
 
 def find_by_text(text):
@@ -68,6 +50,7 @@ def find_by_text(text):
     :return: Question object
     '''
     document = _questions.find_one({'text': text})
+
     return convert_to_question(document)
 
 
@@ -83,8 +66,8 @@ def find_by_keywords(keywords):
 
     for document in cursor:
         question = convert_to_question(document)
-        question.object_id = document['_id']
         output.append(question)
+
     return output
 
 
@@ -104,5 +87,22 @@ def find_by_category(category):
     return questions
 
 
-def delete(id):
-    _questions.delete_one(({'_id': id}))
+def remove_by_text():
+    pass
+
+
+def recompute_vector():
+    cursor = _questions.find({})
+
+    for document in cursor:
+        question = convert_to_question(document)
+        try:
+            question = _question_maker.create_question(text=question.text,
+                                                       category=question.category,
+                                                       answer=question.answer)
+            _questions.delete_one({'text': question.text})
+            insert(question)
+            print('recompute: {}'.format(question.text))
+        except Exception as err:
+            print(err)
+            return document
