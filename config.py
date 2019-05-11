@@ -28,7 +28,7 @@ TENSOR_SERVING = {
 }
 
 HANDLER = {
-    'search_threshold': 160  # search_threshold 이 값보다 클 시 search category로 넘어간다.
+    # search_threshold 이 값보다 클 시 search category로 넘어간다.
 }
 
 QUESTION = {
@@ -41,7 +41,8 @@ SEARCH = {
 
 QUERY = {
     'distance': 'manhattan',
-    'jaccard_threshold': 0.5
+    'jaccard_threshold': 0.5,
+    'search_threshold': 160
 }
 
 MONGODB = {

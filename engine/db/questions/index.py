@@ -1,5 +1,6 @@
 import pickle
 
+import logging
 from engine.data.question import QuestionMaker
 from engine.db.index import *
 from engine.db.questions.question import convert_to_question, convert_to_document
@@ -91,18 +92,24 @@ def remove_by_text():
     pass
 
 
-def recompute_vector():
+def rebase():
     cursor = _questions.find({})
 
     for document in cursor:
+        id
         question = convert_to_question(document)
+        backup = None
         try:
             question = _question_maker.create_question(text=question.text,
                                                        category=question.category,
                                                        answer=question.answer)
+            backup = question
             _questions.delete_one({'text': question.text})
             insert(question)
-            print('recompute: {}'.format(question.text))
+            print('rebase: {}'.format(question.text))
         except Exception as err:
-            print(err)
+            print('rebase: ', err)
+            print(document)
+            if backup:
+                insert(backup)
             return document
