@@ -12,7 +12,7 @@ from engine.model.serving import TensorServer
 
 def manhattan_distance(a, b):
     '''
-    :param a: sentence vector, [1, 768]
+    :param a: sentence feature_vector, [1, 768]
     :param b:
     :return:
     '''
@@ -62,14 +62,14 @@ class QueryMaker():
             return top[0][0], top[0][1]
 
         keywords = self.preprocessor.get_keywords(chat)
-        jaccard_distances = get_top(self.get_jaccard_distances(chat), top=5)
+        jaccard_distances = get_top(self.get_jaccard(chat), top=5)
 
         feature_vector = None
         manhattan_similarity = None
         jaccard_similarity = None
         if not jaccard_distances:
             feature_vector = self.modelWrapper.similarity(chat)
-            feature_distances = self.get_feature_distances(feature_vector, keywords)
+            feature_distances = self.get_similarity(feature_vector, keywords)
             top = get_top(feature_distances, top=5)
             matched_question, manhattan_similarity = get_one(top)
         else:
@@ -84,7 +84,7 @@ class QueryMaker():
 
         return query
 
-    def get_jaccard_distances(self, chat):
+    def get_jaccard(self, chat):
         assert chat is not None
         question_list = questions.find_all()
         assert question_list is not None
@@ -111,7 +111,7 @@ class QueryMaker():
 
         return OrderedDict(sorted(distance_dict.items(), key=lambda t: t[1], reverse=True))
 
-    def get_feature_distances(self, feature_vector, keywords):
+    def get_similarity(self, feature_vector, keywords):
         assert feature_vector is not None
 
         question_list = questions.find_by_keywords(keywords=keywords)
