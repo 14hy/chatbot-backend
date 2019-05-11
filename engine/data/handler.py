@@ -7,7 +7,6 @@ from engine.utils import Singleton
 from engine.db.queries import index as queries
 
 
-
 class Handler(metaclass=Singleton):
 
     def __init__(self):
@@ -58,12 +57,15 @@ class Handler(metaclass=Singleton):
         if category == 'shuttle_bus':
             return self._service_shuttle.response()
         elif category == 'talk':
-            return {"mode": "talk", "response": "Preparing for talk..."}
+            return {"mode": "talk", "answer": "Preparing for talk..."}
         elif category == 'food':
-            return {'mode': 'food', 'response': 'Preparing for food...'}
+            return {'mode': 'food', 'answer': 'Preparing for food...'}
         elif category == 'book':
-            return {'mode': 'book', 'response': 'Taeuk will do'}
+            return {'mode': 'book', 'answer': 'Taeuk will do'}
         elif category == 'search':
-            response, context, tfidf_score = self._service_search.response(query.chat)
-            return {'mode': 'search', 'response': response,
+            answer, context, tfidf_score = self._service_search.response(query.chat)
+            if not answer:  # 정답이 오지 않았다면 일상대화로 유도
+                query.category = 'talk'
+                return self.by_category(query)
+            return {'mode': 'search', 'answer': answer,
                     'context': context, 'tfidf_score': tfidf_score}
