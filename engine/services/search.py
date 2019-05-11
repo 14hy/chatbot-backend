@@ -25,9 +25,12 @@ class Search(metaclass=Singleton):
     def response(self, chat):
         # context TF IDF 로 찾기
         context, score = self.get_context(chat)
+        if score == 0:
+            return None, None, None
         text = context['text']
+        answer = self.tensor_server.search(chat, text)
 
-        return self.tensor_server.search(chat, text), text, score
+        return answer, text, score
 
     def set_tfidf_matrix(self):
         text_list = list(map(lambda x: ' '.join(self.preprocessor.get_keywords(x['text'])),
