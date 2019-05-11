@@ -14,10 +14,11 @@ PREPROCESS = {
 
 BERT = {
     'model_path-search': os.path.join(BASE_DIR, 'squad_train_model/model.ckpt-11000'),
-    'model_path-similarity': os.path.join(BASE_DIR, 'data/model_1/model.ckpt-100000'),
+    'model_path-similarity': os.path.join(BASE_DIR, 'data/pretrain_512_3/model.ckpt-550000'),
     'bert_json': os.path.join(BASE_DIR, 'squad_train_model/bert_config.json'),
-    'bert_json-ef': os.path.join(BASE_DIR, 'data/bert_config.json'),
     'similarity_layer': -2,
+    'version-similarity': 2,
+    'version-search': 2,
     'max_seq_length-search': 384,
     'max_seq_length-similarity': 25
 }
@@ -31,7 +32,7 @@ HANDLER = {
 }
 
 QUESTION = {
-    'categories': ['shuttle_bus', 'food', 'talk', 'search', 'book']
+    'categories': ['shuttle_bus', 'food', 'talk', 'search', 'book', 'prepared']
 }
 
 SEARCH = {

@@ -17,9 +17,10 @@ class Handler(metaclass=Singleton):
         self.preprocessor = PreProcessor()
 
     @staticmethod
-    def get_response(answer, morphs, distance, measurement):
+    def get_response(answer, morphs, distance, measurement, text):
         return {"morphs": morphs,  # 형태소 분석 된 결과
                 "measurement": measurement,  # 유사도 측정의 방법, [jaccard, manhattan]
+                "with": text,
                 "distance": distance,  # 위 유사도의 거리
                 "answer": answer}
 
@@ -27,18 +28,21 @@ class Handler(metaclass=Singleton):
         query = self.query_maker.make_query(chat)
         matched_question = query.matched_question
         morphs = self.preprocessor.get_morphs(chat)
+        text = None
 
         if query.jaccard_similarity:
             distance = query.jaccard_similarity
             measurement = 'jaccard_similarity'
             query.category = matched_question.category
+            text = matched_question.text
         elif query.manhattan_similarity:
             distance = query.manhattan_similarity
             measurement = 'manhattan_similarity'
-            # query.category = matched_question.category
-            # if distance >= self.CONFIG['search_threshold']:
-            query.category = 'search'
-            matched_question.answer = None  # FOR TEST ONLY
+            query.category = matched_question.category
+            if distance >= self.CONFIG['search_threshold']:
+                query.category = 'search'
+                matched_question.answer = None
+            text = matched_question.text
         else:
             raise Exception('Query distance Error!')
 
@@ -49,7 +53,7 @@ class Handler(metaclass=Singleton):
 
         queries.insert(query)
 
-        return self.get_response(answer, morphs, distance, measurement)
+        return self.get_response(answer, morphs, distance, measurement, text)
 
     def by_category(self, query):
         category = query.category
