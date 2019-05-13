@@ -28,7 +28,7 @@ TENSOR_SERVING = {
 }
 
 HANDLER = {
-    # search_threshold 이 값보다 클 시 search category로 넘어간다.
+    'DUMMY': None
 }
 
 QUESTION = {
