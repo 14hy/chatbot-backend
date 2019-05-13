@@ -35,7 +35,7 @@ def euclidean_distance(a, b):
     return 1 + np.linalg.norm(np.sqrt(np.dot((a - b), (a - b))))
 
 
-class QueryMaker():
+class QueryMaker(object):
 
     def __init__(self):
 
@@ -68,7 +68,7 @@ class QueryMaker():
         if not added_time:
             added_time = datetime.utcnow().astimezone(UTC)
 
-        assert added_time.tzinfo is UTC
+        added_time.astimezone(UTC)
 
         def get_top(distances, top=1):
             assert type(distances) is OrderedDict
@@ -146,18 +146,25 @@ class QueryMaker():
             return morphs['output'].split(' ')
 
         def _calc_jaacard(A, B):
-            num_union = len(A) + len(B)
+            A_output = A['output']
+            B_output = B['output']
+            VISITED = []
+            num_union = len(A) + len(B) - 2 # output 뺀 것
             num_joint = 0
-            for a in A:
-                for b in B:
-                    if a == b:
+            for key_a, tag_a in A.items():
+                for key_b, tag_b in B.items():
+                    if key_a == 'output' or key_b == 'output':
+                        continue
+                    if key_a == key_b and tag_a == tag_b and key_a not in VISITED:
                         num_joint += 1
+                        VISITED.append(key_a)
             return num_joint / (num_union - num_joint)
 
-        chat_morphs = _morphs_to_list(self.preprocessor.get_morphs(chat))
+        chat_morphs = self.preprocessor.get_morphs(chat)
+        print(self.preprocessor.get_morphs(chat))
 
         for each in question_list:
-            question_morphs = _morphs_to_list(each.morphs)
+            question_morphs = self.preprocessor.get_morphs(each.text)
             distance_dict[each.text] = _calc_jaacard(chat_morphs, question_morphs)
 
         return OrderedDict(sorted(distance_dict.items(), key=lambda t: t[1], reverse=True))
@@ -183,3 +190,8 @@ class QueryMaker():
             distances[question.text] = distance
 
         return OrderedDict(sorted(distances.items(), key=lambda t: t[1]))
+
+
+if __name__ == "__main__":
+    test = QueryMaker()
+    a = test.get_jaccard('셔틀 언제 와요?')
