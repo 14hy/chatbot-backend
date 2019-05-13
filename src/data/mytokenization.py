@@ -27,12 +27,6 @@ class FullTokenizer(FullTokenizer):
         print('*** vocab file: {}***'.format(vocab_file))
 
     def text_to_morphs(self, text):
-        '''
-        형태소분석
-        :param text: str,
-        :return: str, 형태소 분석하여 띄어쓰기 된 chat
-        '''
-
         morphs = {}
         output = []
 

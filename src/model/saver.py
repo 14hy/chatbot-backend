@@ -4,7 +4,6 @@ import math
 import os
 import re
 import sys
-import tempfile
 import time
 import tensorflow as tf
 import numpy as np
@@ -740,7 +739,7 @@ class Model(object):
     #     elmo_output = self.sess.run(self.elmo_output, feed_dict)
 
     def search_to_saved_model(self):
-        MODEL_DIR = tempfile.gettempdir()
+        MODEL_DIR = self.CONFIG['MODEL_DIR']
         version = self.CONFIG['version-search']
         export_path = os.path.join(MODEL_DIR, 'search', str(version))
         print('export_path = {}\n'.format(export_path))
@@ -777,7 +776,7 @@ class Model(object):
         print('GENERATED SAVED MODEL')
 
     def ef_to_saved_model(self):
-        MODEL_DIR = tempfile.gettempdir()
+        MODEL_DIR = self.CONFIG['MODEL_DIR']
         version = self.CONFIG['version-similarity']
         export_path = os.path.join(MODEL_DIR, 'similarity', str(version))
         print('export_path = {}\n'.format(export_path))
@@ -857,5 +856,4 @@ class Model(object):
 
 
 if __name__ == "__main__":
-    model = Model(mode=1)
-    # model.to_saved_model()
+    model = Model(mode=0)

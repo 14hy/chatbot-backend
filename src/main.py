@@ -2,20 +2,22 @@ from time import time
 
 from src.data.handler import Handler
 from src.services.shuttle import ShuttleBus
+from src.data.query import QueryMaker
 
 
 class Engine(object):
 
     def __init__(self):
 
-        self.chat_handler = Handler()
-        self.shuttleBus = ShuttleBus()
+        self._chat_handler = Handler()
+        self._shuttleBus = ShuttleBus()
+        self._query_maker = QueryMaker()
 
     def get_shuttle(self, weekend=None, season=None, hours=None, minutes=None, seconds=None, current=False):
         if current:
-            return self.shuttleBus.response()
+            return self._shuttleBus.response()
         else:
-            return self.shuttleBus.custom_response(weekend, season, hours, minutes, seconds)
+            return self._shuttleBus.custom_response(weekend, season, hours, minutes, seconds)
 
     def chat_to_answer(self, chat):
         '''
@@ -26,7 +28,7 @@ class Engine(object):
         tic = time()
 
         # TODO Query Feature extractor.
-        answer = self.chat_handler.handle(chat)
+        answer = self._chat_handler.handle(chat)
         toc = time()
         # pprint(answer)
 
@@ -35,4 +37,3 @@ class Engine(object):
 
 if __name__ == '__main__':
     main = Engine()
-    print('ENGINE MAIN')
