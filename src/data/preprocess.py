@@ -203,7 +203,7 @@ class PreProcessor(metaclass=Singleton):
         deletion_len = 0
         while True:
             found = False
-            output = final_morphs['output'].split()
+            output = final_morphs['text'].split()
             last_morph = output[n]
             tag = final_morphs[last_morph]
             for t in uselsess_tags:
