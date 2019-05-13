@@ -80,7 +80,7 @@ class FullTokenizer(FullTokenizer):
         '''
         split_tokens = []
         if self.use_morphs:
-            text = self.text_to_morphs(text)['output']
+            text = self.text_to_morphs(text)['text']
         for token in self.basic_tokenizer.tokenize(text):
             for sub_token in self.wordpiece_tokenizer.tokenize(token):
                 split_tokens.append(sub_token)
