@@ -24,7 +24,7 @@ BERT = {
     'MODEL_DIR': os.path.join(BASE_DIR, 'hdd2/tensor_serving_models')
 }
 TENSOR_SERVING = {
-    'url-search': 'http://localhost:8501/v1/models/bert-search:predict',
+    'url-search': 'http://localhost:8501/v1/models/search:predict',
     'url-similarity': 'http://localhost:8502/v1/models/similarity:predict'
 }
 
