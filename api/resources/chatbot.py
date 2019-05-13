@@ -107,7 +107,20 @@ class Shuttle(Resource):
 @v1.route('/analysis/similarity/morphs')
 class AnalysisSimilarityMorphs(Resource):
 
-    @v1.doc('문장 형태소 분석 조회', params={'chat': '사용자 질문'})
+    @v1.doc('사용자 질문의 문장 형태소 분석 조회', params={'chat': '사용자 질문'})
+    def get(self):
+        try:
+            parser = reqparse.RequestParser()
+            parser.add_argument('chat', required=True, type=str, help='사용자 질문')
+            args = parser.parse_args(strict=True)
+
+            _chat = args['chat']
+            return get_Morphs(_chat)
+        except Exception as err:
+            print(err)
+            return {'error': str(err)}
+
+    @v1.doc('사전 답변과의 문장 형태소 분석 조회', params={'chat': '사용자 질문'})
     def post(self):
         try:
             parser = reqparse.RequestParser()
@@ -141,11 +154,16 @@ class AnalysisStatisticsKeywords(Resource):
 @v1.route('/analysis/queries/searchs')
 class AnalysisStatisticsKeywords(Resource):
 
-    @v1.doc('쿼리에서 search 카테고리 모두 검색')
+    @v1.doc('쿼리에서 search 카테고리 모두 검색', params={'number': '검색 할 개수(기본 20개)'})
     def get(self):
         try:
+            parser = reqparse.RequestParser()
+            parser.add_argument('number', required=False, default=20, type=int, help='조회 할 개수(기본 20개)')
+            args = parser.parse_args(strict=True)
 
-            return get_SearchToQuestion()
+            _number = args['number']
+            return get_SearchToQuestion(_number)
         except Exception as err:
             print(err)
             return {'error': str(err)}
+

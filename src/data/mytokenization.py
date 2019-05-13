@@ -47,7 +47,7 @@ class FullTokenizer(FullTokenizer):
                 morphs[word] = tag
                 output.append(word)
         output = ' '.join(output)
-        morphs['output'] = output
+        morphs['text'] = output
         if self.log:
             pprint(morphs)
         return morphs

@@ -9,6 +9,10 @@ _query_maker = QueryMaker()
 _preprocessor = PreProcessor()
 
 
+def get_Morphs(query):
+    return _preprocessor.get_morphs(query)
+
+
 def get_JaccardSimilarity(query):
     sorted_jaccard_list = _query_maker.get_jaccard(query)
 
@@ -45,7 +49,7 @@ def get_JaccardSimilarity(query):
         only_in_question = {}
         in_both = {}
         for word, tag in _morphs_query.items():
-            if word == 'output':
+            if word == 'text':
                 continue
             if word in _morphs_question.keys():
                 in_both[word] = tag
@@ -53,7 +57,7 @@ def get_JaccardSimilarity(query):
                 only_in_query[word] = tag
 
         for word, tag in _morphs_question.items():
-            if word == 'output':
+            if word == 'text':
                 continue
             if word not in in_both.keys():
                 only_in_question[word] = tag
@@ -89,8 +93,8 @@ def get_MostCommonKeywords(n=7):
     return output
 
 
-def get_SearchToQuestion():
-    queries = _queries.find_by_category('search')
+def get_SearchToQuestion(n=20):
+    queries = _queries.find_by_category('search')[:n]
 
     output = {}
     for query in queries:

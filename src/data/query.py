@@ -142,18 +142,15 @@ class QueryMaker(object):
 
         distance_dict = {}
 
-        def _morphs_to_list(morphs):
-            return morphs['output'].split(' ')
-
         def _calc_jaacard(A, B):
-            A_output = A['output']
-            B_output = B['output']
+            A_output = A['text']
+            B_output = B['text']
             VISITED = []
-            num_union = len(A) + len(B) - 2 # output 뺀 것
+            num_union = len(A) + len(B) - 2  # output 뺀 것
             num_joint = 0
             for key_a, tag_a in A.items():
                 for key_b, tag_b in B.items():
-                    if key_a == 'output' or key_b == 'output':
+                    if key_a == 'text' or key_b == 'text':
                         continue
                     if key_a == key_b and tag_a == tag_b and key_a not in VISITED:
                         num_joint += 1
@@ -161,7 +158,6 @@ class QueryMaker(object):
             return num_joint / (num_union - num_joint)
 
         chat_morphs = self.preprocessor.get_morphs(chat)
-        print(self.preprocessor.get_morphs(chat))
 
         for each in question_list:
             question_morphs = self.preprocessor.get_morphs(each.text)
