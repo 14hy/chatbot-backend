@@ -96,7 +96,7 @@ def rebase():
     cursor = _questions.find({})
 
     for document in cursor:
-        id
+
         question = convert_to_question(document)
         backup = None
         try:

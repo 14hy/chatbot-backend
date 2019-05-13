@@ -43,7 +43,7 @@ SEARCH = {
 QUERY = {
     'distance': 'manhattan',
     'jaccard_threshold': 0.5,
-    'search_threshold': 160
+    'search_threshold': 120
 }
 
 MONGODB = {
