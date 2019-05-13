@@ -7,15 +7,23 @@ _query_maker = QueryMaker()
 
 
 def insert(query):
-    query = convert_to_document(query=query)
-    return _queries.update_one({'chat': query['chat']}, {'$set': query}, upsert=True)
+    document = convert_to_document(query=query)
+    return _queries.insert_one(document)
 
 
-def get_list():
+def get_list() -> list:
     queries = []
     cursor = _queries.find({})
 
     for document in cursor:
+        query = convert_to_query(document)
+        queries.append(query)
+    return queries
+
+
+def find_by_category(category):
+    queries = []
+    for document in _queries.find({'category': category}):
         query = convert_to_query(document)
         queries.append(query)
     return queries
@@ -33,7 +41,7 @@ def rebase():
         try:
 
             query = _query_maker.make_query(chat=chat,
-                                            added_time=None)
+                                            added_time=added_time)
             insert(query)
             _queries.delete_one({'_id': _id})
             print('rebase: {}'.format(query.chat))
@@ -44,4 +52,4 @@ def rebase():
 
 
 if __name__ == '__main__':
-    rebase()
+    pass

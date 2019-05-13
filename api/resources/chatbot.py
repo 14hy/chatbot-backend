@@ -5,6 +5,7 @@ from api.common.settings import *
 from src.db.questions import index as questions
 from src.db.contexts import index as contexts
 from src.main import Engine
+from src.services.analysis import *
 
 backend = Engine()
 
@@ -102,13 +103,49 @@ class Shuttle(Resource):
             print(err)
             return {'error': str(err)}
 
-# @v1.route('/db/questions/reset')
-# class Manager(Resource):
-#
-#     @v1.doc('모든 질문 삭제')
-#     def delete(self):
-#         try:
-#             pw.remove_all_questions()
-#             return {'remove_all_questions': 'success'}
-#         except Exception as err:
-#             return {'error': err}
+
+@v1.route('/analysis/similarity/morphs')
+class AnalysisSimilarityMorphs(Resource):
+
+    @v1.doc('문장 형태소 분석 조회', params={'chat': '사용자 질문'})
+    def post(self):
+        try:
+            parser = reqparse.RequestParser()
+            parser.add_argument('chat', required=True, type=str, help='사용자 질문')
+            args = parser.parse_args(strict=True)
+
+            _chat = args['chat']
+            return get_JaccardSimilarity(_chat)
+        except Exception as err:
+            print(err)
+            return {'error': str(err)}
+
+
+@v1.route('/analysis/statistics/keywords')
+class AnalysisStatisticsKeywords(Resource):
+
+    @v1.doc('키워드 통계 조회', params={'number': '조회 할 개수'})
+    def post(self):
+        try:
+            parser = reqparse.RequestParser()
+            parser.add_argument('number', required=False, default=7, type=int, help='조회 할 개수(기본 7개)')
+            args = parser.parse_args(strict=True)
+
+            _number = args['number']
+            return get_MostCommonKeywords(_number)
+        except Exception as err:
+            print(err)
+            return {'error': str(err)}
+
+
+@v1.route('/analysis/queries/searchs')
+class AnalysisStatisticsKeywords(Resource):
+
+    @v1.doc('쿼리에서 search 카테고리 모두 검색')
+    def get(self):
+        try:
+
+            return get_SearchToQuestion()
+        except Exception as err:
+            print(err)
+            return {'error': str(err)}
