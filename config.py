@@ -14,10 +14,10 @@ PREPROCESS = {
 
 BERT = {
     'model_path-search': os.path.join(BASE_DIR, 'squad_train_model/model.ckpt-11000'),
-    'model_path-similarity': os.path.join(BASE_DIR, 'data/pretrain_512_3/model.ckpt-550000'),
+    'model_path-similarity': os.path.join(BASE_DIR, 'hdd2/FINAL_PRETRAIN/model.ckpt-990000'),
     'bert_json': os.path.join(BASE_DIR, 'squad_train_model/bert_config.json'),
-    'similarity_layer': -2,
-    'version-similarity': 1,
+    'similarity_layer': -1,
+    'version-similarity': 2,
     'version-search': 1,
     'max_seq_length-search': 384,
     'max_seq_length-similarity': 25,
@@ -47,7 +47,7 @@ QUERY = {
 }
 
 MONGODB = {
-    'local_ip': 'localhost',
+    'ip': 'localhost',
     'port': 27017,
     'db_name': 'chatbot',
     'col_questions': 'questions',

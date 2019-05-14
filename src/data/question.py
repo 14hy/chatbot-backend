@@ -1,5 +1,5 @@
 import config
-from src.data.preprocess import PreProcessor
+from src.data.preprocessor import PreProcessor
 from src.db.questions.question import Question
 from src.model.serving import TensorServer
 

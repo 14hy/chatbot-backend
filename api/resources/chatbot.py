@@ -1,13 +1,14 @@
 from flask_restplus import Resource
-from flask_restplus import reqparse, fields, inputs
-from flask import Response
+from flask_restplus import reqparse, inputs
 from api.common.settings import *
 from src.db.questions import index as questions
 from src.db.contexts import index as contexts
 from src.main import Engine
 from src.services.analysis import *
 
-backend = Engine()
+# TODO 파일 나누기
+
+engine = Engine()
 
 
 @v1.route('/chat')
@@ -20,7 +21,7 @@ class CategorizeChat(Resource):
             parser.add_argument('chat', type=str, required=True, help='사용자가 입력한 질문 및 발화')
             args = parser.parse_args()
             _chat = args['chat']
-            _answer = backend.chat_to_answer(_chat)
+            _answer = engine.chat_to_answer(_chat)
             return _answer
         except Exception as err:
             print(err)
@@ -90,7 +91,7 @@ class Shuttle(Resource):
             _minutes = args['minutes']
             _seconds = args['seconds']
 
-            return backend.get_shuttle(_weekend, _season, _hours, _minutes, _seconds)
+            return engine.get_shuttle(_weekend, _season, _hours, _minutes, _seconds)
         except Exception as err:
             print(err)
             return {'error': str(err)}
@@ -98,7 +99,7 @@ class Shuttle(Resource):
     @v1.doc('셔틀 버스 정보 조회(현재시간)')
     def get(self):
         try:
-            return backend.get_shuttle(current=True)
+            return engine.get_shuttle(current=True)
         except Exception as err:
             print(err)
             return {'error': str(err)}

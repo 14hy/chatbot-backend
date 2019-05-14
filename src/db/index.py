@@ -4,7 +4,7 @@ import config
 
 MONGODB_CONFIG = config.MONGODB
 
-client = MongoClient(host=MONGODB_CONFIG['local_ip'],
+client = MongoClient(host=MONGODB_CONFIG['ip'],
                      port=MONGODB_CONFIG['port'],
                      username=MONGODB_CONFIG['username'],
                      password=MONGODB_CONFIG['password'])

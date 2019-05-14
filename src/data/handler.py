@@ -1,5 +1,5 @@
 import config
-from src.data.preprocess import PreProcessor
+from src.data.preprocessor import PreProcessor
 from src.data.query import QueryMaker
 from src.utils import Singleton
 from src.db.queries import index as queries

@@ -9,7 +9,7 @@ import tensorflow as tf
 import numpy as np
 
 import config
-from src.data.preprocess import PreProcessor
+from src.data.preprocessor import PreProcessor
 
 
 def get_assignment_map_from_checkpoint(tvars, init_checkpoint):
@@ -809,51 +809,51 @@ class Model(object):
         builder.save()
         print('GENERATED SAVED MODEL')
 
-    def load_saved_model(self, features):
-
-        input_ids = np.array(features.input_ids)
-        input_masks = np.array(features.input_masks)
-        segment_ids = np.array(features.segment_ids)
-
-        input_ids = np.reshape(input_ids, (-1, self.CONFIG['max_seq_length-search']))
-        input_masks = np.reshape(input_masks, (-1, self.CONFIG['max_seq_length-search']))
-        segment_ids = np.reshape(segment_ids, (-1, self.CONFIG['max_seq_length-search']))
-
-        sess = tf.Session()
-        signature_key = tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY
-        placeholder_input_ids = 'input_ids'
-        placeholder_input_masks = 'input_masks'
-        placeholder_segment_ids = 'segment_ids'
-        start_pred = 'start_pred'
-        end_pred = 'end_pred'
-        export_path = '/tmp/1/1'
-
-        meta_graph_def = tf.saved_model.loader.load(sess,
-                                                    [tf.saved_model.tag_constants.SERVING],
-                                                    export_path)
-
-        signature = meta_graph_def.signature_def
-        input_ids_name = signature[signature_key].inputs[placeholder_input_ids].name
-        input_masks_name = signature[signature_key].inputs[placeholder_input_masks].name
-        segment_ids_name = signature[signature_key].inputs[placeholder_segment_ids].name
-        start_pred_name = signature[signature_key].outputs[start_pred].name
-        end_pred_name = signature[signature_key].outputs[end_pred].name
-
-        placeholder_input_ids = sess.graph.get_tensor_by_name(input_ids_name)
-        placeholder_input_masks = sess.graph.get_tensor_by_name(input_masks_name)
-        placeholder_segment_ids = sess.graph.get_tensor_by_name(segment_ids_name)
-        start_pred = sess.graph.get_tensor_by_name(start_pred_name)
-        end_pred = sess.graph.get_tensor_by_name(end_pred_name)
-
-        start, end = sess.run([start_pred, end_pred], {placeholder_input_ids: input_ids,
-                                                       placeholder_input_masks: input_masks,
-                                                       placeholder_segment_ids: segment_ids})
-
-        start = np.argmax(start, axis=-1)
-        end = np.argmax(end, axis=-1)
-
-        return self.preprocessor.idx_to_orig(start, end, features)
+    # def load_saved_model(self, features):
+    #
+    #     input_ids = np.array(features.input_ids)
+    #     input_masks = np.array(features.input_masks)
+    #     segment_ids = np.array(features.segment_ids)
+    #
+    #     input_ids = np.reshape(input_ids, (-1, self.CONFIG['max_seq_length-search']))
+    #     input_masks = np.reshape(input_masks, (-1, self.CONFIG['max_seq_length-search']))
+    #     segment_ids = np.reshape(segment_ids, (-1, self.CONFIG['max_seq_length-search']))
+    #
+    #     sess = tf.Session()
+    #     signature_key = tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY
+    #     placeholder_input_ids = 'input_ids'
+    #     placeholder_input_masks = 'input_masks'
+    #     placeholder_segment_ids = 'segment_ids'
+    #     start_pred = 'start_pred'
+    #     end_pred = 'end_pred'
+    #     export_path = '/tmp/1/1'
+    #
+    #     meta_graph_def = tf.saved_model.loader.load(sess,
+    #                                                 [tf.saved_model.tag_constants.SERVING],
+    #                                                 export_path)
+    #
+    #     signature = meta_graph_def.signature_def
+    #     input_ids_name = signature[signature_key].inputs[placeholder_input_ids].name
+    #     input_masks_name = signature[signature_key].inputs[placeholder_input_masks].name
+    #     segment_ids_name = signature[signature_key].inputs[placeholder_segment_ids].name
+    #     start_pred_name = signature[signature_key].outputs[start_pred].name
+    #     end_pred_name = signature[signature_key].outputs[end_pred].name
+    #
+    #     placeholder_input_ids = sess.graph.get_tensor_by_name(input_ids_name)
+    #     placeholder_input_masks = sess.graph.get_tensor_by_name(input_masks_name)
+    #     placeholder_segment_ids = sess.graph.get_tensor_by_name(segment_ids_name)
+    #     start_pred = sess.graph.get_tensor_by_name(start_pred_name)
+    #     end_pred = sess.graph.get_tensor_by_name(end_pred_name)
+    #
+    #     start, end = sess.run([start_pred, end_pred], {placeholder_input_ids: input_ids,
+    #                                                    placeholder_input_masks: input_masks,
+    #                                                    placeholder_segment_ids: segment_ids})
+    #
+    #     start = np.argmax(start, axis=-1)
+    #     end = np.argmax(end, axis=-1)
+    #
+    #     return self.preprocessor.idx_to_orig(start, end, features)
 
 
 if __name__ == "__main__":
-    model = Model(mode=0)
+    model = Model(mode=1)

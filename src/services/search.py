@@ -1,5 +1,5 @@
 import config
-from src.data.preprocess import PreProcessor
+from src.data.preprocessor import PreProcessor
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from src.model.serving import TensorServer

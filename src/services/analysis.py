@@ -1,7 +1,7 @@
 from collections import Counter
 
 from src.data.query import QueryMaker
-from src.data.preprocess import PreProcessor
+from src.data.preprocessor import PreProcessor
 from src.db.queries.index import get_list
 from src.db.queries import index as _queries
 

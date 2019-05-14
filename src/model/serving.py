@@ -5,7 +5,7 @@ import requests
 
 import config
 from src.utils import Singleton
-from src.data.preprocess import PreProcessor
+from src.data.preprocessor import PreProcessor
 
 
 class TensorServer(metaclass=Singleton):
