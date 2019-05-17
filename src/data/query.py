@@ -101,11 +101,15 @@ class QueryMaker(object):
         jaccard_similarity = get_top(self.get_jaccard(chat), top=5)
         morphs = self.preprocessor.get_morphs(chat)
 
-        if not jaccard_similarity:
+        if not jaccard_similarity:  # 자카드 유사도가 없다면
             feature_vector = self.modelWrapper.similarity(chat)
             feature_distances = self.get_similarity(chat, feature_vector, keywords)
-            top = get_top(feature_distances, top=5)
-            matched_question, manhattan_similarity = get_one(top)
+            if feature_distances is None:
+                manhattan_similarity = 999
+                matched_question = QuestionMaker().create_question('겹치는 사전답변이 없음', category='search')
+            else:
+                top = get_top(feature_distances, top=5)
+                matched_question, manhattan_similarity = get_one(top)
         else:
             matched_question, jaccard_similarity = get_one(jaccard_similarity)
 
@@ -180,6 +184,8 @@ class QueryMaker(object):
 
         distances = {}
         a_vector = self.get_weighted_average_vector(chat, feature_vector)
+        if type(a_vector) != np.ndarray:
+            return None
 
         for question in question_list:
             b_vector = self.get_weighted_average_vector(question.text, question.feature_vector)
@@ -212,8 +218,11 @@ class QueryMaker(object):
             vector[i] += vector[i] * idf * self.CONFIG['idf_weight']
             output_vector.append(vector[i])
 
-        output_vector = np.mean(output_vector, axis=0)
-        return output_vector
+        if output_vector:
+            output_vector = np.mean(output_vector, axis=0)
+            return output_vector
+        else:
+            return False
 
 
 if __name__ == "__main__":

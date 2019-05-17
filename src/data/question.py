@@ -17,7 +17,7 @@ class QuestionMaker(object):
                                                 stop_words=None, vocabulary=vocab)
         self.idf_, self.vocabulary_ = self.set_idf()
 
-    def create_question(self, text, category=None, answer=None):
+    def create_question(self, text, answer=None, category=None):
         text, removed = self.preprocessor.clean(text)
 
         if category not in self.CONFIG['categories']:
@@ -43,7 +43,7 @@ class QuestionMaker(object):
         return idf_, self.tfidf_vectorizer.vocabulary_
 
     def insert_text(self, text, answer=None, category=None):
-        question = self.create_question((text, answer, category))
+        question = self.create_question(text, answer, category)
         _questions.insert(question)
 
     def rebase(self):

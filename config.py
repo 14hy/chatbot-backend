@@ -44,9 +44,9 @@ SEARCH = {
 QUERY = {
     'distance': 'manhattan',
     'jaccard_threshold': 0.7,
-    'search_threshold': 500,
-    'idf_weight': 1.0,
-    # 건드리면 search threshold 도 조정 해줘야 하며
+    'search_threshold': 50,
+    'idf_weight': 0.1,
+    # idf_weight: 건드리면 search threshold 도 조정 해줘야 하며
     # 높일 수록 더욱 더 비슷한 것들만 찾게 됨
 }
 
