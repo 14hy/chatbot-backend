@@ -4,12 +4,13 @@ BASE_DIR = '/home/rhodochrosited/'
 
 PREPROCESS = {
     'vocab_file': os.path.join(BASE_DIR, 'squad_train_model/vocab-9171.txt'),
+    'stop_words_file': os.path.join(BASE_DIR, 'chatbot', 'stop_words.txt'),
     'use_morphs': True,
     'max_seq_length-search': 384,
     'max_query_length-search': 64,
     'max_query_length-similarity': 25,  # = seq_length
     'keywords_tags': ['NNG', 'NNP', 'NNB', 'NNBC', 'MAG'],
-    'clean_orig_tags': ['JK', 'JX', 'JC']
+    'clean_tags': ['JK', 'JX', 'JC']
 }
 
 BERT = {
@@ -42,8 +43,21 @@ SEARCH = {
 
 QUERY = {
     'distance': 'manhattan',
-    'jaccard_threshold': 0.5,
-    'search_threshold': 120
+    'jaccard_threshold': 0.7,
+    'search_threshold': 500,
+    'idf_weight': 1.0,
+    # 건드리면 search threshold 도 조정 해줘야 하며
+    # 높일 수록 더욱 더 비슷한 것들만 찾게 됨
+}
+
+ANALYSIS = {
+    # T-SNE
+    'perplexity': 30.0,  # 5~50 권장
+    'learning_rate': 200.0,  # 10~1000
+    'n_iter': 1000,  # 최소 250
+    'metric': 'euclidean',  # distance metric ( x_i <-> x_j )
+    'method': 'barnes_hut',  # 속도개선
+    'n_components': 2,  # y 차원
 }
 
 MONGODB = {
