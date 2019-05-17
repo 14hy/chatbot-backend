@@ -213,10 +213,14 @@ class QueryMaker(object):
 
             idx = vocabulary_[token]
             idf = idf_[idx]
-            if token == '[UNK]' or idf == 1.0:
+            if token == '[UNK]':
                 continue
-            vector[i] += vector[i] * idf * self.CONFIG['idf_weight']
-            output_vector.append(vector[i])
+            elif idf == 1.0:
+                output_vector.append(vector[i])
+                continue
+            else:
+                vector[i] += vector[i] * idf * self.CONFIG['idf_weight']
+                output_vector.append(vector[i])
 
         if output_vector:
             output_vector = np.mean(output_vector, axis=0)
