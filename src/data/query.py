@@ -3,8 +3,8 @@ import numpy as np
 from datetime import datetime, timezone
 import config
 from src.data.preprocessor import PreProcessor
+from src.data.question import QuestionMaker
 from src.db.queries.query import Query
-
 from src.db.questions import index as questions
 from src.model.serving import TensorServer
 from src.services.search import Search
@@ -41,6 +41,7 @@ class QueryMaker(object):
 
         self.preprocessor = PreProcessor()
         self.modelWrapper = TensorServer()
+        self._question_maker = QuestionMaker()
         self._service_shuttle = ShuttleBus()
         self._service_search = Search()
 
@@ -64,6 +65,10 @@ class QueryMaker(object):
                     'context': context, 'tfidf_score': tfidf_score}
 
     def make_query(self, chat, added_time=None):
+
+        chat, removed = self.preprocessor.clean(chat)
+        if chat is '' or chat is None:
+            return None
 
         if not added_time:
             added_time = datetime.utcnow().astimezone(UTC)
@@ -98,7 +103,7 @@ class QueryMaker(object):
 
         if not jaccard_similarity:
             feature_vector = self.modelWrapper.similarity(chat)
-            feature_distances = self.get_similarity(feature_vector, keywords)
+            feature_distances = self.get_similarity(chat, feature_vector, keywords)
             top = get_top(feature_distances, top=5)
             matched_question, manhattan_similarity = get_one(top)
         else:
@@ -165,27 +170,50 @@ class QueryMaker(object):
 
         return OrderedDict(sorted(distance_dict.items(), key=lambda t: t[1], reverse=True))
 
-    def get_similarity(self, feature_vector, keywords):
+    def get_similarity(self, chat, feature_vector, keywords):
         assert feature_vector is not None
+        assert chat is not None
 
         question_list = questions.find_by_keywords(keywords=keywords)
         if not question_list:  # 걸리는 키워드가 없는 경우 모두 다 비교
             question_list = questions.find_all()
 
         distances = {}
+        a_vector = self.get_weighted_average_vector(chat, feature_vector)
 
         for question in question_list:
-            a = feature_vector
-            b = question.feature_vector
+            b_vector = self.get_weighted_average_vector(question.text, question.feature_vector)
+
             if self.CONFIG['distance'] == 'manhattan':
-                distance = manhattan_distance(a, b)
+                distance = manhattan_distance(a_vector, b_vector)
             elif self.CONFIG['distance'] == 'euclidean':
-                distance = euclidean_distance(a, b)
+                distance = euclidean_distance(a_vector, b_vector)
             else:
                 raise Exception('CONFIG distance  measurement Error!')
             distances[question.text] = distance
 
         return OrderedDict(sorted(distances.items(), key=lambda t: t[1]))
+
+    def get_weighted_average_vector(self, text, vector):
+        assert len(vector.shape) == 2
+
+        tokens = self.preprocessor.str_to_tokens(text)
+
+        idf_ = self._question_maker.idf_
+        vocabulary_ = self._question_maker.vocabulary_
+        output_vector = []
+
+        for i, token in enumerate(tokens):
+
+            idx = vocabulary_[token]
+            idf = idf_[idx]
+            if token == '[UNK]' or idf == 1.0:
+                continue
+            vector[i] += vector[i] * idf * self.CONFIG['idf_weight']
+            output_vector.append(vector[i])
+
+        output_vector = np.mean(output_vector, axis=0)
+        return output_vector
 
 
 if __name__ == "__main__":

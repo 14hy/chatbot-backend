@@ -43,7 +43,7 @@ class Questions(Resource):
             _text = args['text']
             _answer = args['answer']
             _category = args['category']
-            questions.create_insert(_text, _answer, _category)
+            engine.insert_question(_text, _answer, _category)
             return {'status': 'Success'}
         except Exception as err:
             print(err)
