@@ -1,17 +1,7 @@
-import pickle
-
-import logging
-from src.data.question import QuestionMaker
 from src.db.index import *
 from src.db.questions.question import convert_to_question, convert_to_document
 
 _questions = db[MONGODB_CONFIG['col_questions']]
-_question_maker = QuestionMaker()
-
-
-def create_insert(text, answer=None, category=None):
-    question = _question_maker.create_question(text, answer=answer, category=category)
-    return insert(question)
 
 
 def insert(question):
@@ -25,7 +15,8 @@ def insert(question):
 
     document = convert_to_document(question)
 
-    return _questions.update_one({'text': document['text']}, {'$set': document},
+    return _questions.update_one(filter={'text': document['text']},
+                                 update={'$set': document},
                                  upsert=True)  # update_one -> 중복 삽입을 막기 위해
 
 
@@ -51,8 +42,9 @@ def find_by_text(text):
     :return: Question object
     '''
     document = _questions.find_one({'text': text})
-
-    return convert_to_question(document)
+    if document:
+        return convert_to_question(document)
+    return None
 
 
 def find_by_keywords(keywords):
@@ -88,28 +80,12 @@ def find_by_category(category):
     return questions
 
 
+def delete_by_text(text):
+    return _questions.delete_one({'text': text})
+
+
 def remove_by_text():
     pass
 
 
-def rebase():
-    cursor = _questions.find({})
-
-    for document in cursor:
-
-        question = convert_to_question(document)
-        backup = None
-        try:
-            question = _question_maker.create_question(text=question.text,
-                                                       category=question.category,
-                                                       answer=question.answer)
-            backup = question
-            _questions.delete_one({'text': question.text})
-            insert(question)
-            print('rebase: {}'.format(question.text))
-        except Exception as err:
-            print('rebase: ', err)
-            print(document)
-            if backup:
-                insert(backup)
-            return document
+a = find_by_text('오늘 메뉴 뭐에요').feature_vector

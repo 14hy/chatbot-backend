@@ -122,7 +122,7 @@ def load_vocab(vocab_file):
     """Loads a vocabulary file into a dictionary."""
     vocab = collections.OrderedDict()
     index = 0
-    with tf.gfile.GFile(vocab_file, "r") as reader:
+    with open(vocab_file, "r") as reader:
         while True:
             token = convert_to_unicode(reader.readline())
             if not token:
@@ -312,7 +312,7 @@ class BasicTokenizer(object):
         return "".join(output)
 
     def _check_korean_token(self, token):
-        '''check whether korea char and normalize to "NFC" '''
+        """check whether korea char and normalize to "NFC" """
         # NFD-normalized Han-gul is broken down into syllables
         # But the vocabulary was made in units of Eulogy.
         # That's why every word becomes [UNK].

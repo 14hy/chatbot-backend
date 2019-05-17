@@ -4,6 +4,7 @@ from khaiii import KhaiiiApi
 from mecab import MeCab
 
 from src.data.tokenization import *
+from src.data.tokenization import _is_punctuation
 
 
 class FullTokenizer(FullTokenizer):
@@ -11,11 +12,11 @@ class FullTokenizer(FullTokenizer):
     def __init__(self, vocab_file,
                  do_lower_case=True,
                  use_morphs=False,
-                 log=False):
+                 log=False, stop_words_file=None):
         self.use_morphs = use_morphs
         self.vocab = load_vocab(vocab_file)
         self.inv_vocab = {v: k for k, v in self.vocab.items()}
-        self.basic_tokenizer = BasicTokenizer(do_lower_case=do_lower_case)
+        self.basic_tokenizer = BasicTokenizer(do_lower_case=do_lower_case, stop_words_file=stop_words_file)
         self.wordpiece_tokenizer = WordpieceTokenizer(vocab=self.vocab,
                                                       use_morphs=self.use_morphs)
 
@@ -25,6 +26,16 @@ class FullTokenizer(FullTokenizer):
         self.log = log
         print('*** running with my tokenizer ***')
         print('*** vocab file: {}***'.format(vocab_file))
+
+    def clean_chat(self, chat):
+
+        removed = []
+
+        chat, r = self.basic_tokenizer.clean_punctuations(chat)
+        chat, r2 = self.basic_tokenizer.clean_stop_words(chat)
+        removed.extend(r + r2)
+
+        return chat, removed
 
     def text_to_morphs(self, text):
         morphs = {}
@@ -53,13 +64,12 @@ class FullTokenizer(FullTokenizer):
         return morphs
 
     def get_keywords(self, text, tag_NN):
-        '''
+        """
         질문으로 부터 체언을 뽑아 키워드로 생각하고 리턴
         :param tag_NN: 뽑을 키워드의 태그
-        :param n_keywords: int, 키워드 최대 수
         :param text: str,
         :return: list, 키워드
-        '''
+        """
         keywords = []
         # Mecab 에서 제공하는 체언 품사들 # TODO 체언 말고도 쓸만한 품사가 있을 지?
 
@@ -73,11 +83,11 @@ class FullTokenizer(FullTokenizer):
         return keywords
 
     def tokenize(self, text):
-        '''
-        Basic tokenizer -> 형태소 분석 -> Wordpiece tokenizer
+        """
+        Basic tokenizer -> 형태소 분석 -> Word-piece tokenizer
         :param text: str, 질문
         :return: list, 토큰들
-        '''
+        """
         split_tokens = []
         if self.use_morphs:
             text = self.text_to_morphs(text)['text']
@@ -149,3 +159,60 @@ class WordpieceTokenizer(WordpieceTokenizer):
             else:
                 output_tokens.extend(sub_tokens)
         return output_tokens
+
+
+class BasicTokenizer(BasicTokenizer):
+
+    def __init__(self, do_lower_case=True, stop_words_file=None):
+        self.do_lower_case = do_lower_case
+        self.stop_words = self.load_stop_words(stop_words_file)
+
+    def load_stop_words(self, file):
+        stop_words = []
+
+        with open(file, mode='r') as f:
+            for line in f:
+                convert_to_unicode(line)
+                stop_words.append(line.strip())
+
+        return stop_words
+
+    def is_stop_words(self, text):
+
+        for word in self.stop_words:
+            if word == text:
+                return True
+
+        return False
+
+    def clean_punctuations(self, text):
+
+        text = list(text)
+        output = []
+        removed = []
+
+        for char in text:
+            if _is_punctuation(char):
+                removed.append(char)
+            else:
+                output.append(char)
+        output = ' '.join(whitespace_tokenize(''.join(output)))
+        return output, removed
+
+    def clean_stop_words(self, text):
+
+        text = text.split()
+        output = []
+        removed = []
+
+        for t in text:
+            if self.is_stop_words(t):
+                pass
+            else:
+                output.append(t)
+
+        return ' '.join(output), removed
+
+
+if __name__ == '__main__':
+    test = BasicTokenizer(True, './stop_words.txt')

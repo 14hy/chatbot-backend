@@ -22,6 +22,7 @@ class Handler(metaclass=Singleton):
                 'category': category}
 
     def handle(self, chat, added_time=None):
+        chat, _ = self.preprocessor.clean(chat)
         query = self.query_maker.make_query(chat=chat, added_time=added_time)
         if query.manhattan_similarity:
             distance = query.manhattan_similarity

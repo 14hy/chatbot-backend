@@ -42,6 +42,9 @@ def rebase():
 
             query = _query_maker.make_query(chat=chat,
                                             added_time=added_time)
+            if query is None:
+                _queries.delete_one({'_id': _id})
+                continue
             insert(query)
             _queries.delete_one({'_id': _id})
             print('rebase: {}'.format(query.chat))
@@ -52,4 +55,4 @@ def rebase():
 
 
 if __name__ == '__main__':
-    pass
+    rebase()

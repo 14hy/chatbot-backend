@@ -33,7 +33,8 @@ class TensorServer(metaclass=Singleton):
         response = requests.post(self.CONFIG['url-similarity'], json=self.create_request(features))
         response = json.loads(response.text)
         similarity_vector = response['predictions'][0]
-        similarity_vector = np.mean(np.array(similarity_vector)[1:_length - 1, :], axis=0)
+        # similarity_vector = np.mean(np.array(similarity_vector)[1:_length - 1, :], axis=0)
+        similarity_vector = np.array(similarity_vector)[1:_length - 1]
 
         return similarity_vector
 

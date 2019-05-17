@@ -1,6 +1,7 @@
 from time import time
 
 from src.data.handler import Handler
+from src.data.question import QuestionMaker
 from src.services.shuttle import ShuttleBus
 from src.data.query import QueryMaker
 
@@ -12,6 +13,7 @@ class Engine(object):
         self._chat_handler = Handler()
         self._shuttleBus = ShuttleBus()
         self._query_maker = QueryMaker()
+        self._question_maker = QuestionMaker()
 
     def get_shuttle(self, weekend=None, season=None, hours=None, minutes=None, seconds=None, current=False):
         if current:
@@ -33,6 +35,10 @@ class Engine(object):
         # pprint(answer)
 
         return answer
+
+    def insert_question(self, _text, _answer, _category):
+        self._question_maker.insert_text(_text, _answer, _category)
+
 
 
 if __name__ == '__main__':

@@ -6,7 +6,7 @@ from src.utils import Singleton
 def load_vocab_as_list(vocab_file):
     vocab = []
     with open(vocab_file, mode='r', encoding='utf8') as f:
-        while (True):
+        while True:
             line = f.readline()
             line = line.strip('\n')
             if not line:
@@ -51,7 +51,8 @@ class PreProcessor(metaclass=Singleton):
 
         self.CONFIG = config.PREPROCESS
 
-        self.tokenizer = FullTokenizer(self.CONFIG['vocab_file'], use_morphs=self.CONFIG['use_morphs'])
+        self.tokenizer = FullTokenizer(self.CONFIG['vocab_file'], use_morphs=self.CONFIG['use_morphs'],
+                                       stop_words_file=self.CONFIG['stop_words_file'])
         self.vocab = load_vocab_as_list(self.CONFIG['vocab_file'])
 
     def str_to_tokens(self, text):
@@ -148,7 +149,7 @@ class PreProcessor(metaclass=Singleton):
 
             if len(input_ids) > max_seq_length:
                 input_ids = input_ids[0:max_seq_length]
-                input_ids[-1] = 'SEP'
+                input_ids[-1] = '[SEP]'
                 segment_ids = segment_ids[0:max_seq_length]
 
         _length = len(input_ids)
@@ -189,14 +190,14 @@ class PreProcessor(metaclass=Singleton):
                 orig_text = doc_tokens[orig_end:orig_start + 1]
                 # 모델 성능 때문에 start가 더 높게 나오는 경우가 있음
             orig_text = ' '.join(orig_text)
-            return self.clean_orig(orig_text)
+            return self.clean_tags(orig_text)
         except Exception as err:
             return False
 
-    def clean_orig(self, orig_text):
+    def clean_tags(self, text):
         # 조사 제거
-        final_morphs = self.tokenizer.text_to_morphs(orig_text)
-        uselsess_tags = self.CONFIG['clean_orig_tags']
+        final_morphs = self.tokenizer.text_to_morphs(text)
+        tags = self.CONFIG['clean_tags']
         # https://docs.google.com/spreadsheets/d/1-9blXKjtjeKZqsf4NzHeYJCrr49-nXeRF6D80udfcwY/edit#gid=589544265
 
         n = -1
@@ -206,7 +207,7 @@ class PreProcessor(metaclass=Singleton):
             output = final_morphs['text'].split()
             last_morph = output[n]
             tag = final_morphs[last_morph]
-            for t in uselsess_tags:
+            for t in tags:
                 if t in tag:
                     deletion_len += len(last_morph)
                     found = True
@@ -217,9 +218,14 @@ class PreProcessor(metaclass=Singleton):
             if len(output) < -n:
                 break
         if deletion_len != 0:
-            orig_text = orig_text[:-deletion_len]
+            text = text[:-deletion_len]
 
-        return orig_text
+        return text
+
+    def clean(self, chat):
+        chat, removed = self.tokenizer.clean_chat(chat)
+
+        return chat, removed
 
 
 if __name__ == "__main__":

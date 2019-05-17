@@ -1,6 +1,6 @@
 import pickle
 
-import numpy as np
+from bson import Binary
 
 
 class Question(object):
@@ -15,7 +15,7 @@ class Question(object):
 
 
 def convert_to_question(document):
-    vector = pickle.loads(np.array(document['feature_vector']))
+    vector = pickle.loads((document['feature_vector']))
     question = Question(text=document['text'],
                         category=document['category'],
                         answer=document['answer'],
@@ -26,7 +26,7 @@ def convert_to_question(document):
 
 
 def convert_to_document(question):
-    feature_vector = pickle.dumps(question.feature_vector)
+    feature_vector = Binary(pickle.dumps(question.feature_vector, protocol=2))
     document = {'text': question.text,
                 'answer': question.answer,
                 'feature_vector': feature_vector,
