@@ -189,3 +189,27 @@ class AnalysisVisualizeSimilarity(Resource):
         except Exception as err:
             print(err)
             return {'error': str(err)}
+
+
+@v1.route('/chat/search')
+class ChatSearch(Resource):
+
+    @v1.doc('문단 검색', params={'chat': '질문', 'context_subject': '문단 주제'})
+    def post(self):
+        try:
+            parser = reqparse.RequestParser()
+            parser.add_argument('chat', required=True, type=str)
+            parser.add_argument('context_subject', required=False, type=str, default=None)
+            args = parser.parse_args(strict=True)
+
+            _chat = args['chat']
+            _context_subject = args['context_subject']
+
+            if not _context_subject:
+                return engine.chat_to_answer(chat=_chat)
+            else:
+                return engine.chat_search(_chat=_chat, _subject=_context_subject)
+
+        except Exception as err:
+            print(err)
+            return {'error': str(err)}

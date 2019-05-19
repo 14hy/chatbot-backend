@@ -24,14 +24,20 @@ class Search(metaclass=Singleton):
     def response(self, chat):
         # context TF IDF 로 찾기
         output = self.find_context(chat)
-        context = output['context_1']
-        score = output['score_1']
+        context = output['context-1']
+        score = output['score-1']
         if score == 0:
             return None, None
-        text = context['text']
-        answer = self.tensor_server.search(chat, text)
+        answer = self.tensor_server.search(chat, context)
 
         return answer, output
+
+    def response_with_context(self, _chat, _subject):
+        context = contexts.find_by_subject(_subject=_subject)
+        context = context['text']
+        answer = self.tensor_server.search(chat=_chat, context=context)
+
+        return answer
 
     def set_tfidf_matrix(self):
         text_list = list(map(lambda x: ' '.join(self.preprocessor.get_keywords(x['text'])),
@@ -51,15 +57,15 @@ class Search(metaclass=Singleton):
         ordered_list = []
 
         output = {
-            'context_code_1': None,
-            'context_code_2': None,
-            'context_code_3': None,
-            'context_1': None,
-            'context_2': None,
-            'context_3': None,
-            'score_1': None,
-            'score_2': None,
-            'score_3': None
+            'context_subject-1': None,
+            'context_subject-2': None,
+            'context_subject-3': None,
+            'context-1': None,
+            'context-2': None,
+            'context-3': None,
+            'score-1': None,
+            'score-2': None,
+            'score-3': None
         }
 
         for i in range(num_context):
@@ -72,9 +78,9 @@ class Search(metaclass=Singleton):
 
         ordered_list = sorted(ordered_list, key=lambda x: x[1], reverse=True)
         for i in range(self.CONFIG['max_context_num']):
-            output['context_code_{}'.format(i + 1)] = ordered_list[i][0]
-            output['score_{}'.format(i + 1)] = ordered_list[i][1]
-            output['context_{}'.format(i + 1)] = self.get_context(ordered_list[i][0])
+            output['context_subject-{}'.format(i + 1)] = self.get_context(ordered_list[i][0])['subject']
+            output['score-{}'.format(i + 1)] = ordered_list[i][1]
+            output['context-{}'.format(i + 1)] = self.get_context(ordered_list[i][0])['text']
 
         return output
 

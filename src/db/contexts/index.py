@@ -17,3 +17,8 @@ def insert(document):
 def find_all():
     contexts = _contexts.find({})
     return contexts
+
+
+def find_by_subject(_subject):
+    document = _contexts.find({'subject': _subject})
+    return convert_to_context(document=document)
