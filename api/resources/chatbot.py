@@ -194,7 +194,7 @@ class AnalysisVisualizeSimilarity(Resource):
 @v1.route('/chat/search')
 class ChatSearch(Resource):
 
-    @v1.doc('문단 검색', params={'chat': '질문', 'context_subject': '문단 주제'})
+    @v1.doc('문단 검색', params={'chat': '질문', 'context_subject': '문단 주제(default=None)'})
     def post(self):
         try:
             parser = reqparse.RequestParser()
