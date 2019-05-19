@@ -12,11 +12,13 @@ class FullTokenizer(FullTokenizer):
     def __init__(self, vocab_file,
                  do_lower_case=True,
                  use_morphs=False,
-                 log=False, stop_words_file=None):
+                 log=False, stop_words_file=None,
+                 sub_file=None):
         self.use_morphs = use_morphs
         self.vocab = load_vocab(vocab_file)
         self.inv_vocab = {v: k for k, v in self.vocab.items()}
-        self.basic_tokenizer = BasicTokenizer(do_lower_case=do_lower_case, stop_words_file=stop_words_file)
+        self.basic_tokenizer = BasicTokenizer(do_lower_case=do_lower_case, stop_words_file=stop_words_file,
+                                              sub_file=sub_file)
         self.wordpiece_tokenizer = WordpieceTokenizer(vocab=self.vocab,
                                                       use_morphs=self.use_morphs)
 
@@ -33,6 +35,7 @@ class FullTokenizer(FullTokenizer):
 
         chat, r = self.basic_tokenizer.clean_punctuations(chat)
         chat, r2 = self.basic_tokenizer.clean_stop_words(chat)
+        chat = self.basic_tokenizer.sub(chat)
         removed.extend(r + r2)
 
         return chat, removed
@@ -163,11 +166,14 @@ class WordpieceTokenizer(WordpieceTokenizer):
 
 class BasicTokenizer(BasicTokenizer):
 
-    def __init__(self, do_lower_case=True, stop_words_file=None):
+    def __init__(self, do_lower_case=True, stop_words_file=None, sub_file=None):
         self.do_lower_case = do_lower_case
         self.stop_words = self.load_stop_words(stop_words_file)
+        self.sub_dic = self.load_sub(sub_file)
 
     def load_stop_words(self, file):
+        if file is None:
+            return None
         stop_words = []
 
         with open(file, mode='r') as f:
@@ -176,6 +182,29 @@ class BasicTokenizer(BasicTokenizer):
                 stop_words.append(line.strip())
 
         return stop_words
+
+    def load_sub(self, sub_file):
+        if sub_file is None:
+            return None
+        sub_dic = {}
+        with open(sub_file, mode='r', encoding='utf-8') as f:
+            for line in f:
+                line = convert_to_unicode(line).strip()
+                line = line.split(',')
+                sub_dic[line[0]] = line[1]
+        return sub_dic
+
+    def sub(self, text):
+        text = text.split()
+        output = []
+
+        for t in text:
+            if t in self.sub_dic.keys():
+                output.append(self.sub_dic[t])
+            else:
+                output.append(t)
+
+        return ' '.join(output)
 
     def is_stop_words(self, text):
 

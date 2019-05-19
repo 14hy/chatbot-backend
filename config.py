@@ -10,16 +10,22 @@ PREPROCESS = {
     'max_query_length-search': 64,
     'max_query_length-similarity': 25,  # = seq_length
     'keywords_tags': ['NNG', 'NNP', 'NNB', 'NNBC', 'MAG'],
-    'clean_tags': ['JK', 'JX', 'JC']
+    'clean_tags': ['JK', 'JX', 'JC'],
+    'sub_file': os.path.join(BASE_DIR, 'chatbot', 'sub.txt')
 }
 
-BERT = {
-    'model_path-search': os.path.join(BASE_DIR, 'squad_train_model/model.ckpt-11000'),
+BERT = {  # 새로운 TENSOR SERVING 모델을 만들 때 사용
+    'model_path-search': os.path.join(BASE_DIR, 'hdd2/FINAL_SQUAD/model.ckpt-12408'),
     'model_path-similarity': os.path.join(BASE_DIR, 'hdd2/FINAL_PRETRAIN/model.ckpt-990000'),
     'bert_json': os.path.join(BASE_DIR, 'squad_train_model/bert_config.json'),
     'similarity_layer': -1,
+    # ELMO LIKE FEATURE VECTOR LAYERS 여러레이어를 더하거나, -2, -3... 하위 레이어 만을 사용 해보는 방법들 시도해보기
     'version-similarity': 2,
-    'version-search': 1,
+    # 1: 128 seq length 75000 step
+    # 2: 512 seq length 990000 step
+    'version-search': 2,
+    # 1: F1 score 71
+    # 2: F1 score 83.6 + train+dev -> (92)
     'max_seq_length-search': 384,
     'max_seq_length-similarity': 25,
     'MODEL_DIR': os.path.join(BASE_DIR, 'hdd2/tensor_serving_models')
@@ -42,8 +48,8 @@ SEARCH = {
 }
 
 QUERY = {
-    'distance': 'manhattan',
-    'jaccard_threshold': 0.7,
+    'distance': 'euclidean',
+    'jaccard_threshold': 0.55,
     'search_threshold': 50,
     'idf_weight': 0.1,
     # idf_weight: 건드리면 search threshold 도 조정 해줘야 하며

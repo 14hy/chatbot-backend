@@ -52,7 +52,7 @@ class PreProcessor(metaclass=Singleton):
         self.CONFIG = config.PREPROCESS
 
         self.tokenizer = FullTokenizer(self.CONFIG['vocab_file'], use_morphs=self.CONFIG['use_morphs'],
-                                       stop_words_file=self.CONFIG['stop_words_file'])
+                                       stop_words_file=self.CONFIG['stop_words_file'], sub_file=self.CONFIG['sub_file'])
         self.vocab = load_vocab_as_list(self.CONFIG['vocab_file'])
 
     def str_to_tokens(self, text):

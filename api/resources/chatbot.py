@@ -168,3 +168,24 @@ class AnalysisStatisticsKeywords(Resource):
             print(err)
             return {'error': str(err)}
 
+
+@v1.route('/analysis/visualize/similarity')
+class AnalysisVisualizeSimilarity(Resource):
+
+    @v1.doc('벡터 유사도 시각화', params={'chat': 'A chat'})
+    def post(self):
+        try:
+            parser = reqparse.RequestParser()
+            parser.add_argument('chat', required=False, type=str)
+            args = parser.parse_args(strict=True)
+
+            _chat = args['chat']
+            x, y, text, category = visualize_similarity(_chat)
+
+            return {'x': x.tolist(),
+                    'y': y.tolist(),
+                    'text': text,
+                    'category': category}
+        except Exception as err:
+            print(err)
+            return {'error': str(err)}
