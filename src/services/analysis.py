@@ -162,9 +162,10 @@ def visualize_similarity(chat, mode=0):
         for i in range(len(X_category)):
             if X_category[i] == category:
                 temp.append({'text': X_text[i],
-                             'x': x[i],
-                             'y': y[i]})
+                             'x': str(x[i]),
+                             'y': str(y[i])})
         output[category] = temp
+
     # plt.scatter(x=x, y=y)
     # for i in range(len(x)):
     #     plt.text(x=x[i] + 0.1, y=y[i], s=X_text[i], fontsize=10)
@@ -176,5 +177,5 @@ if __name__ == '__main__':
     # print(get_JaccardSimilarity('셔틀 언제 오나요?'))
     # b = get_MostCommonKeywords()
     # print(get_SearchToQuestion())
-    visualize_similarity('셔틀 언제 와?')
+    output = visualize_similarity('셔틀 언제 와?')
     pass

@@ -5,6 +5,7 @@ from src.db.questions import index as questions
 from src.db.contexts import index as contexts
 from src.main import Engine
 from src.services.analysis import *
+import json
 
 # TODO 파일 나누기
 
@@ -182,7 +183,7 @@ class AnalysisVisualizeSimilarity(Resource):
             _chat = args['chat']
             output = visualize_similarity(_chat)
 
-            return str(output)
+            return output
         except Exception as err:
             print(err)
             return {'error': str(err)}
