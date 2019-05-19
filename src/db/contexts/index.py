@@ -21,4 +21,4 @@ def find_all():
 
 def find_by_subject(_subject):
     document = _contexts.find_one({'subject': _subject})
-    return convert_to_context(document=document)
+    return document

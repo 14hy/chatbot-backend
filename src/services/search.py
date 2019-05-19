@@ -37,7 +37,7 @@ class Search(metaclass=Singleton):
         context = context['text']
         answer = self.tensor_server.search(chat=_chat, context=context)
 
-        return answer
+        return answer, context
 
     def set_tfidf_matrix(self):
         text_list = list(map(lambda x: ' '.join(self.preprocessor.get_keywords(x['text'])),
