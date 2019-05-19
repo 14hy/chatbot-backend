@@ -121,7 +121,7 @@ def get_SearchToQuestion(n=20):
     # search 중에서 정확도가 높은 것들을 사전 답변으로 옮기는 것을 고려
 
 
-def visualize_similarity(chat):
+def visualize_similarity(chat, mode = 0):
     """t-SNE 학습을 통해 벡터 시각화"""
     assert type(chat) == str
     tsne = TSNE(n_components=CONFIG['n_components'],

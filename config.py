@@ -45,15 +45,7 @@ QUESTION = {
 
 SEARCH = {
     'sublinear_tf': True,
-}
-
-QUERY = {
-    'distance': 'euclidean',
-    'jaccard_threshold': 0.55,
-    'search_threshold': 50,
-    'idf_weight': 0.1,
-    # idf_weight: 건드리면 search threshold 도 조정 해줘야 하며
-    # 높일 수록 더욱 더 비슷한 것들만 찾게 됨
+    'max_context_num': 3  # search에서 tf idf 로 최대한 찾을 문단의 수
 }
 
 ANALYSIS = {
@@ -66,6 +58,15 @@ ANALYSIS = {
     'n_components': 2,  # y 차원
 }
 
+QUERY = {
+    'distance': 'euclidean',
+    'jaccard_threshold': 0.55,
+    'search_threshold': 15,
+    'idf_weight': 0.1,
+    # idf_weight: 건드리면 search threshold 도 조정 해줘야 하며
+    # 높일 수록 더욱 더 비슷한 것들만 찾게 됨
+    'metric': ANALYSIS['metric']
+}
 MONGODB = {
     'ip': 'localhost',
     'port': 27017,

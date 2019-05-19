@@ -47,26 +47,28 @@ class QueryMaker(object):
 
         self.CONFIG = config.QUERY
 
-    def by_category(self, chat, category):
+    def by_category(self, chat, category, matched_question=None):
 
         if category == 'shuttle_bus':
             return self._service_shuttle.response()
         elif category == 'talk':
-            return {"mode": "talk", "answer": "Preparing for talk..."}
+            return {"mode": "talk", "answer": matched_question.text}
         elif category == 'food':
-            return {'mode': 'food', 'answer': 'Preparing for food...'}
+            return {'mode': 'food', 'answer': '학식 보여주기'}
         elif category == 'book':
-            return {'mode': 'book', 'answer': 'Taeuk will do'}
+            return {'mode': 'book', 'answer': '도서관 모드 진입'}
         elif category == 'search':
-            answer, context, tfidf_score = self._service_search.response(chat)
-            if not answer:  # 정답이 오지 않았다면 일상대화로 유도
-                return self.by_category(chat, category='talk')
-            return {'mode': 'search', 'answer': answer,
-                    'context': context, 'tfidf_score': tfidf_score}
+            answer, output = self._service_search.response(chat)
+            if not answer:  # 정답이 오지 않았다면 실패
+                return {'mode': 'unknown', 'answer': '무슨 말인지 모르겠다냥~ 다시 해달라냥'}
+            return {'mode': 'search',
+                    'answer': answer,
+                    'output': output}
 
     def make_query(self, chat, added_time=None):
 
         chat, removed = self.preprocessor.clean(chat)
+
         if chat is '' or chat is None:
             return None
 
@@ -91,50 +93,37 @@ class QueryMaker(object):
 
             return output
 
-        def get_one(top):
-            return top[0][0], top[0][1]
-
-        feature_vector = None
-        manhattan_similarity = None
-
+        feature_vector = self.modelWrapper.similarity(chat)
+        jaccard_similarity = None
+        top_feature_distance = None
+        category = None
         keywords = self.preprocessor.get_keywords(chat)
-        jaccard_similarity = get_top(self.get_jaccard(chat), top=5)
         morphs = self.preprocessor.get_morphs(chat)
 
-        if not jaccard_similarity:  # 자카드 유사도가 없다면
-            feature_vector = self.modelWrapper.similarity(chat)
-            feature_distances = self.get_similarity(chat, feature_vector, keywords)
-            if feature_distances is None:
-                manhattan_similarity = 999
-                matched_question = QuestionMaker().create_question('겹치는 사전답변이 없음', category='search')
-            else:
-                top = get_top(feature_distances, top=5)
-                matched_question, manhattan_similarity = get_one(top)
-        else:
-            matched_question, jaccard_similarity = get_one(jaccard_similarity)
+        # 우선 자카드 유사도 TOP 5를 찾음
+        jaccard_top_distances = get_top(self.get_jaccard(chat), top=5)
 
-        if jaccard_similarity:
+        if jaccard_top_distances:
+            measurement = '자카드 유사도'
+            matched_question, jaccard_similarity = jaccard_top_distances[0][0], jaccard_top_distances[0][1]
             category = matched_question.category
-            measurement = 'jaccard_similarity'
-        elif manhattan_similarity:
+
+        else:  # 자카드 유사도가 없다면, 유클리드 또는 맨하탄 거리 비교로 넘어간다.
+            feature_top_distances = get_top(self.get_similarity(chat, keywords))
+            measurement = self.CONFIG['metric']
+            matched_question = feature_top_distances[0][0]
+            top_feature_distance = feature_top_distances[0][1]
             category = matched_question.category
-            measurement = 'manhattan_similarity'
-            if manhattan_similarity >= self.CONFIG['search_threshold']:
+            if top_feature_distance >= self.CONFIG['search_threshold'] or top_feature_distance is None:
                 category = 'search'
-                matched_question.answer = None
-        else:
-            raise Exception('Query distance Error!')
 
-        if not matched_question.answer:
-            answer = self.by_category(chat, category)
-        else:
-            answer = matched_question.answer
+        answer = self.by_category(chat, category, matched_question)
 
         query = Query(chat=chat,
                       feature_vector=feature_vector,
                       keywords=keywords,
                       matched_question=matched_question,
-                      manhattan_similarity=manhattan_similarity,
+                      manhattan_similarity=top_feature_distance,
                       jaccard_similarity=jaccard_similarity,
                       added_time=added_time,
                       answer=answer,
@@ -174,10 +163,10 @@ class QueryMaker(object):
 
         return OrderedDict(sorted(distance_dict.items(), key=lambda t: t[1], reverse=True))
 
-    def get_similarity(self, chat, feature_vector, keywords):
-        assert feature_vector is not None
+    def get_similarity(self, chat, keywords):
         assert chat is not None
 
+        feature_vector = self.modelWrapper.similarity(chat)
         question_list = questions.find_by_keywords(keywords=keywords)
         if not question_list:  # 걸리는 키워드가 없는 경우 모두 다 비교
             question_list = questions.find_all()

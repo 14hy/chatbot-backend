@@ -13,13 +13,12 @@ class Handler(metaclass=Singleton):
         self.preprocessor = PreProcessor()
 
     @staticmethod
-    def get_response(answer, morphs, distance, measurement, text, category=None):
+    def get_response(answer, morphs, distance, measurement, text):
         return {"morphs": morphs,  # 형태소 분석 된 결과
                 "measurement": measurement,  # 유사도 측정의 방법, [jaccard, manhattan]
                 "with": text,
                 "distance": distance,  # 위 유사도의 거리
-                "answer": answer,
-                'category': category}
+                "answer": answer}
 
     def handle(self, chat, added_time=None):
         chat, _ = self.preprocessor.clean(chat)
@@ -33,5 +32,4 @@ class Handler(metaclass=Singleton):
                                  morphs=query.morphs,
                                  distance=distance,
                                  measurement=query.measurement,
-                                 text=query.matched_question,
-                                 category=query.category)
+                                 text=query.matched_question)
