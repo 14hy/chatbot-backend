@@ -180,12 +180,9 @@ class AnalysisVisualizeSimilarity(Resource):
             args = parser.parse_args(strict=True)
 
             _chat = args['chat']
-            x, y, text, category = visualize_similarity(_chat)
+            output = visualize_similarity(_chat)
 
-            return {'x': x.tolist(),
-                    'y': y.tolist(),
-                    'text': text,
-                    'category': category}
+            return str(output)
         except Exception as err:
             print(err)
             return {'error': str(err)}
@@ -213,3 +210,4 @@ class ChatSearch(Resource):
         except Exception as err:
             print(err)
             return {'error': str(err)}
+
