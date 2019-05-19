@@ -121,7 +121,7 @@ def get_SearchToQuestion(n=20):
     # search 중에서 정확도가 높은 것들을 사전 답변으로 옮기는 것을 고려
 
 
-def visualize_similarity(chat, mode = 0):
+def visualize_similarity(chat, mode=0):
     """t-SNE 학습을 통해 벡터 시각화"""
     assert type(chat) == str
     tsne = TSNE(n_components=CONFIG['n_components'],
@@ -155,11 +155,21 @@ def visualize_similarity(chat, mode = 0):
     Y = tsne.fit_transform(X=X)  # low-dimension vectors
     x = Y[:, 0]
     y = Y[:, 1]
+
+    output = {}
+    for category in CONFIG['categories']:
+        temp = []
+        for i in range(len(X_category)):
+            if X_category[i] == category:
+                temp.append({'text': X_text[i],
+                             'x': x[i],
+                             'y': y[i]})
+        output[category] = temp
     # plt.scatter(x=x, y=y)
-    for i in range(len(x)):
-        plt.text(x=x[i] + 0.1, y=y[i], s=X_text[i], fontsize=10)
+    # for i in range(len(x)):
+    #     plt.text(x=x[i] + 0.1, y=y[i], s=X_text[i], fontsize=10)
     # plt.show()
-    return x, y, X_text, X_category
+    return output
 
 
 if __name__ == '__main__':

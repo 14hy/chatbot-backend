@@ -42,12 +42,12 @@ class Engine(object):
         self._question_maker.insert_text(_text, _answer, _category)
 
     def chat_search(self, _chat, _subject):
-        answer = self._search.response_with_context(_chat=_chat, _subject=_subject)
+        answer, context = self._search.response_with_context(_chat=_chat, _subject=_subject)
         return {
-            'mode': 'chat_serach',
-            'answer': answer
+            'mode': 'chat_search',
+            'answer': answer,
+            'context': context
         }
-
 
 
 if __name__ == '__main__':

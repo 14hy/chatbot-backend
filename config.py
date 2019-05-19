@@ -56,6 +56,7 @@ ANALYSIS = {
     'metric': 'euclidean',  # distance metric ( x_i <-> x_j )
     'method': 'barnes_hut',  # 속도개선
     'n_components': 2,  # y 차원
+    'categories': QUESTION['categories']
 }
 
 QUERY = {
