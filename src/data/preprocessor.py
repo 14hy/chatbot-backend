@@ -147,10 +147,10 @@ class PreProcessor(metaclass=Singleton):
             input_ids.append('[SEP]')
             segment_ids.append(1)
 
-            if len(input_ids) > max_seq_length:
-                input_ids = input_ids[0:max_seq_length]
-                input_ids[-1] = '[SEP]'
-                segment_ids = segment_ids[0:max_seq_length]
+        if len(input_ids) > max_seq_length:
+            input_ids = input_ids[0:max_seq_length]
+            input_ids[-1] = '[SEP]'
+            segment_ids = segment_ids[0:max_seq_length]
 
         _length = len(input_ids)
 
