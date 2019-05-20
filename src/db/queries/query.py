@@ -34,7 +34,8 @@ def convert_to_query(document):
                   added_time=document['added_time'],
                   answer=document['answer'],
                   morphs=document['morphs'],
-                  measurement=document['measurement'])
+                  measurement=document['measurement'],
+                  category=document['category'])
     return query
 
 

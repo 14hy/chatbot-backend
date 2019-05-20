@@ -137,26 +137,43 @@ def visualize_similarity(chat, mode=0):
     chat_vector = _query_maker.modelWrapper.similarity(chat=chat)
     chat_vector = _query_maker.get_weighted_average_vector(text=chat, vector=chat_vector)
 
-    questions_list = _questions.find_all()
+    if mode == 0:
+        target_list = _questions.find_all()
+    if mode == 1:
+        target_list = _queries.find_all()
 
     X.append(chat_vector)
     X_text.append(chat)
     X_category.append('입력')
 
-    for question in questions_list:
-        text = question.text
-        question_vector = _query_maker.get_weighted_average_vector(text=text, vector=question.feature_vector)
+    for target in target_list:
+        if mode == 0:
+            text = target.text
+        if mode == 1:
+            text = target.chat
+            # :( ㅜ_ㅜ
+
+        if text in X_text:  # Save time
+            continue
+        if target.feature_vector is None:  # 에러
+            continue
+        question_vector = _query_maker.get_weighted_average_vector(text=text, vector=target.feature_vector)
 
         if type(question_vector) == np.ndarray:
             X.append(question_vector)
             X_text.append(text)
-            X_category.append(question.category)
+            X_category.append(target.category)
 
     Y = tsne.fit_transform(X=X)  # low-dimension vectors
     x = Y[:, 0]
     y = Y[:, 1]
 
     output = {}
+    chat = []
+    chat.append(x[0])
+    chat.append(y[0])
+    chat.append(X_text[0])
+    output['input'] = chat
     for category in CONFIG['categories']:
         temp = []
         for i in range(len(X_category)):
@@ -173,9 +190,28 @@ def visualize_similarity(chat, mode=0):
     return output
 
 
+def visualize_category(mode=0):
+    categories = []
+
+    if mode == 0:  # Questions
+        questions = _questions.find_all()
+
+        for question in questions:
+            categories.append(question.category)
+    elif mode == 1:
+        queries = _queries.find_all()
+
+        for query in queries:
+            categories.append(query.category)
+
+    counter = Counter(categories)
+    return counter
+
+
 if __name__ == '__main__':
     # print(get_JaccardSimilarity('셔틀 언제 오나요?'))
     # b = get_MostCommonKeywords()
     # print(get_SearchToQuestion())
-    output = visualize_similarity('셔틀 언제 와?')
+    # output = visualize_similarity('셔틀 언제 와?', mode=1)
+    # visualize_category(1)
     pass

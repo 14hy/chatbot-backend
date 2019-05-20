@@ -1,6 +1,8 @@
 from src.data.query import QueryMaker
 from src.db.index import *
 from src.db.queries.query import *
+from datetime import tzinfo, datetime, timezone
+from tqdm import tqdm
 
 _queries = db[MONGODB_CONFIG['col_queries']]
 _query_maker = QueryMaker()
@@ -21,6 +23,14 @@ def get_list() -> list:
     return queries
 
 
+def find_all():
+    queries = []
+    for document in _queries.find({}):
+        query = convert_to_query(document)
+        queries.append(query)
+    return queries
+
+
 def find_by_category(category):
     queries = []
     for document in _queries.find({'category': category}):
@@ -29,8 +39,20 @@ def find_by_category(category):
     return queries
 
 
+def find_by_date(year, month, day, hour=0, minute=0, second=0):
+    NOW = datetime(year=year, month=month, day=day,
+                   hour=hour, minute=minute, second=second)
+    UTC = timezone.utc
+
+    NOW.astimezone(UTC)
+
+    queries = _queries.find({'added_time': {'$gte': NOW}})
+
+    print(list(queries))
+
+
 def rebase():
-    for document in _queries.find({}):
+    for document in tqdm(_queries.find({}), desc='Rebase query'):
         _id = document['_id']
         chat = document['chat']
         try:
@@ -47,7 +69,6 @@ def rebase():
                 continue
             insert(query)
             _queries.delete_one({'_id': _id})
-            print('rebase: {}'.format(query.chat))
         except Exception as err:
             print('rebase ERROR: ', err)
             print(document)
@@ -56,3 +77,4 @@ def rebase():
 
 if __name__ == '__main__':
     rebase()
+    # find_by_date(2018, 5, 6, 0)

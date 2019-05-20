@@ -10,6 +10,8 @@ import json
 # TODO 파일 나누기
 
 engine = Engine()
+QUESTIONS = 0
+QUERIES = 1
 
 
 @v1.route('/chat')
@@ -170,7 +172,7 @@ class AnalysisStatisticsKeywords(Resource):
             return {'error': str(err)}
 
 
-@v1.route('/analysis/visualize/similarity')
+@v1.route('/analysis/visualize/similarity/questions')
 class AnalysisVisualizeSimilarity(Resource):
 
     @v1.doc('벡터 유사도 시각화', params={'chat': 'A chat'})
@@ -181,7 +183,26 @@ class AnalysisVisualizeSimilarity(Resource):
             args = parser.parse_args(strict=True)
 
             _chat = args['chat']
-            output = visualize_similarity(_chat)
+            output = visualize_similarity(_chat, mode=QUESTIONS)
+
+            return output
+        except Exception as err:
+            print(err)
+            return {'error': str(err)}
+
+
+@v1.route('/analysis/visualize/similarity/queries')
+class AnalysisVisualizeSimilarity(Resource):
+
+    @v1.doc('벡터 유사도 시각화', params={'chat': 'A chat'})
+    def post(self):
+        try:
+            parser = reqparse.RequestParser()
+            parser.add_argument('chat', required=False, type=str)
+            args = parser.parse_args(strict=True)
+
+            _chat = args['chat']
+            output = visualize_similarity(_chat, mode=QUERIES)
 
             return output
         except Exception as err:
@@ -212,3 +233,26 @@ class ChatSearch(Resource):
             print(err)
             return {'error': str(err)}
 
+
+@v1.route('/analysis/statistics/category/questions')
+class AnalysisStatisticsCategory(Resource):
+
+    @v1.doc('질문 카테고리 통계')
+    def get(self):
+        try:
+            return visualize_category(QUESTIONS)
+        except Exception as err:
+            print(err)
+            return {'error': str(err)}
+
+
+@v1.route('/analysis/statistics/category/queries')
+class AnalysisStatisticsCategory(Resource):
+
+    @v1.doc('질문 카테고리 통계')
+    def get(self):
+        try:
+            return visualize_category(QUERIES)  # mode 1: queries
+        except Exception as err:
+            print(err)
+            return {'error': str(err)}
