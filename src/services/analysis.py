@@ -170,8 +170,8 @@ def visualize_similarity(chat, mode=0):
 
     output = {}
     chat = []
-    chat.append(x[0])
-    chat.append(y[0])
+    chat.append(str(x[0]))
+    chat.append(str(y[0]))
     chat.append(X_text[0])
     output['input'] = chat
     for category in CONFIG['categories']:
