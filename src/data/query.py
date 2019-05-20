@@ -215,7 +215,7 @@ class QueryMaker(object):
             output_vector = np.mean(output_vector, axis=0)
             return output_vector
         else:
-            return False
+            return np.array([0.0] * 768)
 
 
 if __name__ == "__main__":
