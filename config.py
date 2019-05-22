@@ -26,7 +26,9 @@ BERT = {  # 새로운 TENSOR SERVING 모델을 만들 때 사용
     'version-search': 2,
     # 1: F1 score 71
     # 2: F1 score 83.6 + train+dev -> (92)
-    'version-sentiment': 2,
+    'version-sentiment': 3,
+    # 2: predict - 1.0/ 0.0
+    # 3: predict - 0.0~1.0 (중립추가 하기위해)
     'max_seq_length-search': 384,
     'max_seq_length-similarity': 25,
     'MODEL_DIR': os.path.join(BASE_DIR, 'sentiment/tensor_serving_models')

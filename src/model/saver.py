@@ -603,7 +603,6 @@ class Model(object):
     def build_model(self):
         if self.mode == 0:
             bert_json = self.CONFIG['bert_json']
-            model_path = self.CONFIG['model_path-search']
             max_seq_length = self.CONFIG['max_seq_length-search']
         elif self.mode == 1:
             bert_json = self.CONFIG['bert_json']
@@ -687,6 +686,12 @@ class Model(object):
 
         self.start_pred = tf.argmax(self.start_logits, axis=-1)
         self.end_pred = tf.argmax(self.end_logtis, axis=-1)
+
+    def load_checkpoint(self):
+        if self.mode == 0:
+            model_path = self.CONFIG['model_path-search']
+        elif self.mode == 1:
+            model_path = self.CONFIG['model_path-similarity']
 
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())

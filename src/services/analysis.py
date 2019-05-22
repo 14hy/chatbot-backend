@@ -9,7 +9,9 @@ from src.db.queries import index as _queries
 from src.db.questions import index as _questions
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
+from src.model.serving import TensorServer
 
+_tensor_server = TensorServer()
 _query_maker = QueryMaker()
 _preprocessor = PreProcessor()
 
@@ -208,10 +210,29 @@ def visualize_category(mode=0):
     return counter
 
 
+def visualize_sentiment():
+    #  모든 쿼리 불러오고
+    queries = _queries.find_all()
+
+    output = OrderedDict()
+    for query in queries:
+        if query.chat in output:
+            continue
+        sentiment_score = _tensor_server.sentiment(query.chat)
+        output[query.chat] = sentiment_score[0]
+    output = sorted(output.items(), key=lambda x: x[1], reverse=True)
+    return output
+
+    #  모두 스코어를 메긴 다음,
+
+    #
+
+
 if __name__ == '__main__':
     # print(get_JaccardSimilarity('셔틀 언제 오나요?'))
     # b = get_MostCommonKeywords()
     # print(get_SearchToQuestion())
     # output = visualize_similarity('셔틀 언제 와?', mode=1)
     # visualize_category(1)
+    a = visualize_sentiment()
     pass

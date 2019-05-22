@@ -7,6 +7,10 @@ import config
 from src.utils import Singleton
 from src.data.preprocessor import PreProcessor
 
+"""
+Docker Tensor-server 요청/ 응답
+"""
+
 
 class TensorServer(metaclass=Singleton):
     def __init__(self):
@@ -26,7 +30,15 @@ class TensorServer(metaclass=Singleton):
         }
         return request_json
 
+    def sentiment(self, chat):
+        chat, _ = self.preprocessor.clean(chat=chat)
+        features = self.preprocessor.create_InputFeature(query_text=chat)
+        response = requests.post(self.CONFIG['url-sentiment'], json=self.create_request(features))
+        predict = json.loads(response.text)['predictions'][0]
+        return predict
+
     def similarity(self, chat):
+        chat, _ = self.preprocessor.clean(chat=chat)
         features = self.preprocessor.create_InputFeature(query_text=chat)
         _length = np.sum(features.input_masks)
 
@@ -39,6 +51,7 @@ class TensorServer(metaclass=Singleton):
         return similarity_vector
 
     def search(self, chat, context):
+        chat, _ = self.preprocessor.clean(chat=chat)
         features = self.preprocessor.create_InputFeature(chat, context)
 
         response = requests.post(self.CONFIG['url-search'], json=self.create_request(features))
@@ -50,3 +63,7 @@ class TensorServer(metaclass=Singleton):
         start = np.argmax(start, axis=-1)
         end = np.argmax(end, axis=-1)
         return self.preprocessor.idx_to_orig(start, end, features)
+
+
+if __name__ == '__main__':
+    test = TensorServer()
