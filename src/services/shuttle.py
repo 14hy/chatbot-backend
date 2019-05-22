@@ -96,7 +96,6 @@ class ShuttleBus(object):
         current_time = timedelta(hours=NOW.hour,
                                  minutes=NOW.minute,
                                  seconds=NOW.second)
-        print('** Current Time: {}.'.format(current_time))
         season = self.check_season(current_time)
         weekend = self.check_weekend()
         # table = self.get_table(season, weekend)
