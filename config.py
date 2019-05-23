@@ -33,10 +33,11 @@ BERT = {  # 새로운 TENSOR SERVING 모델을 만들 때 사용
     'max_seq_length-similarity': 25,
     'MODEL_DIR': os.path.join(BASE_DIR, 'sentiment/tensor_serving_models')
 }
+
 TENSOR_SERVING = {
-    'url-search': 'http://localhost:8501/v1/models/search:predict',
-    'url-similarity': 'http://localhost:8502/v1/models/similarity:predict',
-    'url-sentiment': 'http://localhost:8503/v1/models/sentiment:predict'
+    'url-search': 'http://10.140.0.8:8501/v1/models/search:predict',
+    'url-similarity': 'http://10.140.0.8:8502/v1/models/similarity:predict',
+    'url-sentiment': 'http://10.140.0.8:8503/v1/models/sentiment:predict'
 }
 
 HANDLER = {
