@@ -192,6 +192,7 @@ class QueryMaker(object):
     def get_weighted_average_vector(self, text, vector):
         assert len(vector.shape) == 2
 
+        text, _ = self.preprocessor.clean(text)
         tokens = self.preprocessor.str_to_tokens(text)
 
         idf_ = self._question_maker.idf_
