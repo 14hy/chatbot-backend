@@ -129,18 +129,29 @@ A. 토이츄러스
 python app.py --ip --port
 ```
 3. Server 2 - (GPU)
+
+[nvidia-docker](https://github.com/NVIDIA/nvidia-docker) 설치 이후
+
+![image](https://user-images.githubusercontent.com/12870549/58275636-7fa99300-7dd0-11e9-9baa-60ba1aff82de.png)
+
 ```bash
 인공지능 QA
-docker run -p 8501:8501 --mount type=bind,source=/home/rhodochrosited/hdd2/ \
-tensor_serving_models/search/,target=/models/search -e MODEL_NAME=search -t tensorflow/serving
+docker run --runtime=nvidia -p 8501:8501 \
+  --mount type=bind,source=/home/rhodochrosited/tensor_serving_models/search/,\
+  target=/models/search -e MODEL_NAME=search -t tensorflow/serving:latest-gpu \
+  --per_process_gpu_memory_fraction=0.3 &
 ```
 ```bash
 문장임베딩
-docker run -p 8502:8501 --mount type=bind,source=/home/rhodochrosited/hdd2/ \
-tensor_serving_models/similarity/,target=/models/similarity -e MODEL_NAME=similarity -t tensorflow/serving
+docker run --runtime=nvidia -p 8502:8501 \
+  --mount type=bind,source=/home/rhodochrosited/tensor_serving_models/similarity/,target=/models/similarity -e \
+  MODEL_NAME=similarity -t tensorflow/serving:latest-gpu \
+  --per_process_gpu_memory_fraction=0.3 &
 ```
 ```bash
 감성분석
-docker run -p 8503:8501 --mount type=bind,source=/home/rhodochrosited/hdd2/ \
-tensor_serving_models/sentiment/,target=/models/sentiment -e MODEL_NAME=sentiment -t tensorflow/serving
+docker run --runtime=nvidia -p 8503:8501 \
+  --mount type=bind,source=/home/rhodochrosited/tensor_serving_models/sentiment/,target=/models/sentiment -e \
+  MODEL_NAME=sentiment -t tensorflow/serving:latest-gpu \
+  --per_process_gpu_memory_fraction=0.3 &
 ```
