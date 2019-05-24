@@ -1,5 +1,13 @@
-from api.common.settings import *
-from api.resources.chatbot import CategorizeChat, Questions, Contexts, Shuttle
+from flask import Flask
+from flask_cors import CORS
+import config
+from api import api
+
+CONFIG = config.FLASK
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    app = Flask(__name__)
+    CORS(app)
+
+    api.init_app(app=app)
+    app.run(host=CONFIG['host'], port=CONFIG['port'], debug=CONFIG['debug'])

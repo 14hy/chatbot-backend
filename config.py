@@ -85,6 +85,15 @@ MONGODB = {
     'password': "mhlee"
 }
 
+FLASK = {
+    'host': '0.0.0.0',
+    'port': 6006,
+    'desc': None,
+    'version': '0.3',
+    'title': 'Willson-Hanyang_Chatbot',
+    'debug': True
+}
+
 if __name__ == '__main__':
     print(BASE_DIR)
     print(PREPROCESS)
