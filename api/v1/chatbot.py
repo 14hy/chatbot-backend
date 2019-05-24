@@ -1,19 +1,17 @@
-from flask_restplus import Resource
+from flask_restplus import Resource, Namespace
 from flask_restplus import reqparse, inputs
-from api.common.settings import *
-from src.db.questions import index as questions
 from src.db.contexts import index as contexts
 from src.main import Engine
 from src.services.analysis import *
-import json
-
-# TODO 파일 나누기
 
 engine = Engine()
 QUESTIONS = 0
 QUERIES = 1
 
+v1 = Namespace(name='v1', description='version-1')
 
+
+@v1.deprecated
 @v1.route('/chat')
 class CategorizeChat(Resource):
 
@@ -31,6 +29,7 @@ class CategorizeChat(Resource):
             return {'error': str(err)}
 
 
+@v1.deprecated
 @v1.route('/db/questions/add')
 class Questions(Resource):
 
@@ -53,6 +52,7 @@ class Questions(Resource):
             return {'error': str(err)}
 
 
+@v1.deprecated
 @v1.route('/db/contexts/add')
 class Contexts(Resource):
 
@@ -73,6 +73,7 @@ class Contexts(Resource):
             return {'error': str(err)}
 
 
+@v1.deprecated
 @v1.route('/bus/shuttle')
 class Shuttle(Resource):
 
@@ -108,6 +109,7 @@ class Shuttle(Resource):
             return {'error': str(err)}
 
 
+@v1.deprecated
 @v1.route('/analysis/similarity/morphs')
 class AnalysisSimilarityMorphs(Resource):
 
@@ -138,6 +140,7 @@ class AnalysisSimilarityMorphs(Resource):
             return {'error': str(err)}
 
 
+@v1.deprecated
 @v1.route('/analysis/statistics/keywords')
 class AnalysisStatisticsKeywords(Resource):
 
@@ -155,6 +158,7 @@ class AnalysisStatisticsKeywords(Resource):
             return {'error': str(err)}
 
 
+@v1.deprecated
 @v1.route('/analysis/queries/searchs')
 class AnalysisStatisticsKeywords(Resource):
 
@@ -172,6 +176,7 @@ class AnalysisStatisticsKeywords(Resource):
             return {'error': str(err)}
 
 
+@v1.deprecated
 @v1.route('/analysis/visualize/similarity/questions')
 class AnalysisVisualizeSimilarity(Resource):
 
@@ -191,6 +196,7 @@ class AnalysisVisualizeSimilarity(Resource):
             return {'error': str(err)}
 
 
+@v1.deprecated
 @v1.route('/analysis/visualize/similarity/queries')
 class AnalysisVisualizeSimilarity(Resource):
 
@@ -210,6 +216,7 @@ class AnalysisVisualizeSimilarity(Resource):
             return {'error': str(err)}
 
 
+@v1.deprecated
 @v1.route('/chat/search')
 class ChatSearch(Resource):
 
@@ -234,6 +241,7 @@ class ChatSearch(Resource):
             return {'error': str(err)}
 
 
+@v1.deprecated
 @v1.route('/analysis/statistics/category/questions')
 class AnalysisStatisticsCategory(Resource):
 
@@ -246,6 +254,7 @@ class AnalysisStatisticsCategory(Resource):
             return {'error': str(err)}
 
 
+@v1.deprecated
 @v1.route('/analysis/statistics/category/queries')
 class AnalysisStatisticsCategory(Resource):
 

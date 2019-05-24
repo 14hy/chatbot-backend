@@ -32,12 +32,22 @@ class Search(metaclass=Singleton):
 
         return answer, output
 
-    def response_with_context(self, _chat, _subject):
+    def response_with_subject(self, _chat, _subject):
         context = contexts.find_by_subject(_subject=_subject)
         context = context['text']
         answer = self.tensor_server.search(chat=_chat, context=context)
 
         return answer, context
+
+    def response_with_context(self, _chat, _context):
+        answer = self.tensor_server.search(chat=_chat, context=_context)
+
+        return answer
+
+    def response_with_id(self, _chat, _id):
+        context = contexts.find_by_id(_id=_id)['text']
+
+        return self.tensor_server.search(chat=_chat, context=context), context
 
     def set_tfidf_matrix(self):
         text_list = list(map(lambda x: ' '.join(self.preprocessor.get_keywords(x['text'])),

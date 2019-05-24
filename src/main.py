@@ -7,7 +7,7 @@ from src.data.query import QueryMaker
 from src.services.search import *
 
 
-class Engine(object):
+class Engine(metaclass=Singleton):
 
     def __init__(self):
 
@@ -39,10 +39,10 @@ class Engine(object):
         return answer
 
     def insert_question(self, _text, _answer, _category):
-        self._question_maker.insert_text(_text, _answer, _category)
+        return self._question_maker.insert_text(_text, _answer, _category)
 
     def chat_search(self, _chat, _subject):
-        answer, context = self._search.response_with_context(_chat=_chat, _subject=_subject)
+        answer, context = self._search.response_with_subject(_chat=_chat, _subject=_subject)
         return {
             'mode': 'chat_search',
             'answer': answer,

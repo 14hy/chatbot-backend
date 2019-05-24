@@ -94,12 +94,15 @@ def get_JaccardSimilarity(query):
     return output
 
 
-def get_MostCommonKeywords(n=7):
+def get_MostCommonKeywords(n=7, mode=0):
     # 자주 나오는 키워드 Top
-    queries_list = get_list()
+    if mode == 0:
+        target_list = _questions.find_all()
+    elif mode == 1:
+        target_list = get_list()
 
     keywords = []
-    for query in queries_list:
+    for query in target_list:
         for keyword in query.keywords:
             keywords.append(keyword)
     most_common = Counter(keywords).most_common(n)

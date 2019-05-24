@@ -44,7 +44,7 @@ class QuestionMaker(object):
 
     def insert_text(self, text, answer=None, category=None):
         question = self.create_question(text, answer, category)
-        _questions.insert(question)
+        return _questions.insert(question)
 
     def rebase(self):
         questions = _questions.find_all()
