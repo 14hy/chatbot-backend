@@ -1,5 +1,4 @@
 from flask_restplus import Resource, Namespace
-from api.common.settings import *
 from src.main import Engine
 
 engine = Engine()
