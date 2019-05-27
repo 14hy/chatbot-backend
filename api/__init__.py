@@ -14,7 +14,7 @@ from .v2.visualize.doughnut import api as ns_v2_visualize_doughnut
 from .v2.visualize.histogram import api as ns_v2_visualize_histogram
 from .v2.visualize.line import api as ns_v2_visualize_line
 from .v2.visualize.scatter import api as ns_v2_visualize_scatter
-
+from .v2.index import api as ns_v2
 import config
 
 CONFIG = config.FLASK
@@ -25,6 +25,7 @@ api = Api(version=CONFIG['version'], title=CONFIG['title'], description=CONFIG['
 api.add_namespace(ns_v1)
 
 # version-2
+api.add_namespace(ns_v2)
 api.add_namespace(ns_v2_db_question)
 api.add_namespace(ns_v2_db_query)
 api.add_namespace(ns_v2_db_context)
