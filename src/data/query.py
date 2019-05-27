@@ -52,7 +52,7 @@ class QueryMaker(object):
         if category == 'shuttle_bus':
             return self._service_shuttle.response()
         elif category == 'talk':
-            return {"mode": "talk", "answer": matched_question.text}
+            return {"mode": "talk", "answer": matched_question.answer}
         elif category == 'food':
             return {'mode': 'food', 'answer': '학식 보여주기'}
         elif category == 'book':
