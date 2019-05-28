@@ -6,7 +6,6 @@ import requests
 import config
 from src.utils import Singleton
 from src.data.preprocessor import PreProcessor
-
 """
 Docker Tensor-server 요청/ 응답
 """
@@ -16,6 +15,13 @@ class TensorServer(metaclass=Singleton):
     def __init__(self):
         self.preprocessor = PreProcessor()
         self.CONFIG = config.TENSOR_SERVING
+        search_v = json.loads(requests.get(self.CONFIG['url-search-v']).text)
+        sentiment_v = json.loads(requests.get(self.CONFIG['url-sentiment-v']).text)
+        similarity_v = json.loads(requests.get(self.CONFIG['url-similarity-v']).text)
+        print('TensorServer Running')
+        print('QA - {}'.format(search_v))
+        print('Sentiment - {}'.format(sentiment_v))
+        print('Similarity - {}'.format(similarity_v))
 
     @staticmethod
     def create_request(features):
@@ -45,8 +51,11 @@ class TensorServer(metaclass=Singleton):
         response = requests.post(self.CONFIG['url-similarity'], json=self.create_request(features))
         response = json.loads(response.text)
         similarity_vector = response['predictions'][0]
-        # similarity_vector = np.mean(np.array(similarity_vector)[1:_length - 1, :], axis=0)
+        # similarity_vector = np.mean(np.array(similarity_vector), axis=0)
+        # similarity_vector = np.mean(np.array(similarity_vector)[:_length, :], axis=0)
+        # similarity_vector = np.mean(np.array(similarity_vector)[1: _length - 1, :], axis=0)
         similarity_vector = np.array(similarity_vector)[1:_length - 1]
+        # similarity_vector = np.array(similarity_vector)[0]
 
         return similarity_vector
 

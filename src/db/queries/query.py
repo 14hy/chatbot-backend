@@ -41,5 +41,6 @@ def convert_to_query(document):
 
 def convert_to_document(query):
     query.feature_vector = pickle.dumps(query.feature_vector)
-    query.matched_question = query.matched_question.text
+    if query.matched_question is not None:
+        query.matched_question = query.matched_question.text
     return query.__dict__

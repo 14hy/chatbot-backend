@@ -12,6 +12,21 @@ from src.services.shuttle import ShuttleBus
 
 UTC = timezone.utc
 
+def cosine_similarity(a, b):
+    """
+
+    :param a:
+    :param b:
+    :return:
+    """
+    a = np.reshape(a, newshape=(-1))
+    b = np.reshape(b, newshape=(-1))
+
+    i_p = np.dot(a, b)
+    a_l1 = np.sqrt(np.dot(a, a))
+    b_l1 = np.sqrt(np.dot(b, b))
+
+    return i_p / (a_l1 * b_l1)
 
 def manhattan_distance(a, b):
     '''
@@ -51,8 +66,8 @@ class QueryMaker(object):
 
         if category == 'shuttle_bus':
             return self._service_shuttle.response()
-        elif category == 'talk':
-            return {"mode": "talk", "answer": matched_question.answer}
+        elif category == 'talk' or category == 'prepared':
+            return {"mode": category, "answer": matched_question.answer}
         elif category == 'food':
             return {'mode': 'food', 'answer': '학식 보여주기'}
         elif category == 'book':
@@ -65,7 +80,7 @@ class QueryMaker(object):
                     'answer': answer,
                     'output': output}
 
-    def make_query(self, chat, added_time=None):
+    def make_query(self, chat, added_time=None, analysis=False):
 
         chat, removed = self.preprocessor.clean(chat)
 
@@ -77,16 +92,21 @@ class QueryMaker(object):
 
         added_time.astimezone(UTC)
 
-        def get_top(distances, top=1):
+        def get_top(distances, measure='jaccard'):
             assert type(distances) is OrderedDict
             output = {}
 
             for n, each in enumerate(list(distances.items())):
                 item = each[0]
                 distance = each[1]
-                if distance >= self.CONFIG['jaccard_threshold']:
+                if distance >= self.CONFIG['jaccard_threshold'] and measure == 'jaccard':
                     question_matched = questions.find_by_text(item)
                     output[n] = (question_matched, distance)
+                if distance >= self.CONFIG['cosine_threshold'] and measure == 'cosine':
+                    question_matched = questions.find_by_text(item)
+                    output[n] = (question_matched, distance)
+                # question_matched = questions.find_by_text(item)
+                # output[n] = (question_matched, distance)
 
             if len(output) == 0:
                 return None
@@ -101,7 +121,7 @@ class QueryMaker(object):
         morphs = self.preprocessor.get_morphs(chat)
 
         # 우선 자카드 유사도 TOP 5를 찾음
-        jaccard_top_distances = get_top(self.get_jaccard(chat), top=5)
+        jaccard_top_distances = get_top(self.get_jaccard(chat), measure='jaccard')
 
         if jaccard_top_distances:
             measurement = '자카드 유사도'
@@ -109,13 +129,18 @@ class QueryMaker(object):
             category = matched_question.category
 
         else:  # 자카드 유사도가 없다면, 유클리드 또는 맨하탄 거리 비교로 넘어간다.
-            feature_top_distances = get_top(self.get_similarity(chat, keywords))
-            measurement = self.CONFIG['metric']
-            matched_question = feature_top_distances[0][0]
-            top_feature_distance = feature_top_distances[0][1]
-            category = matched_question.category
-            if top_feature_distance >= self.CONFIG['search_threshold'] or top_feature_distance is None:
+            feature_top_distances = get_top(self.get_similarity(chat, keywords, analysis), measure='cosine')
+            if analysis:
+                return feature_top_distances
+            measurement = self.CONFIG['distance']
+            if feature_top_distances is None:
                 category = 'search'
+                matched_question = None
+                top_feature_distance = None
+            else:
+                matched_question = feature_top_distances[0][0]
+                top_feature_distance = feature_top_distances[0][1]
+                category = matched_question.category
 
         answer = self.by_category(chat, category, matched_question)
 
@@ -163,13 +188,14 @@ class QueryMaker(object):
 
         return OrderedDict(sorted(distance_dict.items(), key=lambda t: t[1], reverse=True))
 
-    def get_similarity(self, chat, keywords):
+    def get_similarity(self, chat, keywords, analysis=False):
         assert chat is not None
 
         feature_vector = self.modelWrapper.similarity(chat)
-        question_list = questions.find_by_keywords(keywords=keywords)
-        if not question_list:  # 걸리는 키워드가 없는 경우 모두 다 비교
-            question_list = questions.find_all()
+        # question_list = questions.find_by_keywords(keywords=keywords)
+        # if not question_list or analysis:  # 걸리는 키워드가 없는 경우 모두 다 비교 # search 로 넘어가는 것이, 성능적으로 좋을 듯
+        #     question_list = questions.find_all()
+        question_list = questions.find_all()
 
         distances = {}
         a_vector = self.get_weighted_average_vector(chat, feature_vector)
@@ -183,13 +209,17 @@ class QueryMaker(object):
                 distance = manhattan_distance(a_vector, b_vector)
             elif self.CONFIG['distance'] == 'euclidean':
                 distance = euclidean_distance(a_vector, b_vector)
+            elif self.CONFIG['distance'] == 'cosine':
+                distance = cosine_similarity(a_vector, b_vector)
             else:
                 raise Exception('CONFIG distance  measurement Error!')
             distances[question.text] = distance
 
-        return OrderedDict(sorted(distances.items(), key=lambda t: t[1]))
+        return OrderedDict(sorted(distances.items(), key=lambda t: t[1], reverse=True))  # 유클리드 할거면 바꿔야되
 
     def get_weighted_average_vector(self, text, vector):
+        if len(vector.shape) == 1:
+            return vector
         assert len(vector.shape) == 2
 
         text, _ = self.preprocessor.clean(text)
@@ -203,17 +233,17 @@ class QueryMaker(object):
 
             idx = vocabulary_[token]
             idf = idf_[idx]
-            if token == '[UNK]':
-                continue
-            elif idf == 1.0:
-                output_vector.append(vector[i])
-                continue
-            else:
-                vector[i] += vector[i] * idf * self.CONFIG['idf_weight']
-                output_vector.append(vector[i])
+            # if token == '[UNK]':
+            #     continue
+            # elif idf == 1.0:
+            #     output_vector.append(vector[i])
+            #     continue
+            # else:
+            vector[i] += vector[i] * idf * self.CONFIG['idf_weight']
+            output_vector.append(vector[i])
 
         if output_vector:
-            output_vector = np.mean(output_vector, axis=0)
+            output_vector = np.sum(output_vector, axis=0)
             return output_vector
         else:
             return np.array([0.0] * 768)
@@ -221,4 +251,6 @@ class QueryMaker(object):
 
 if __name__ == "__main__":
     test = QueryMaker()
-    a = test.get_jaccard('셔틀 언제 와요?')
+    # a = test.get_jaccard('셔틀 언제 와요?')
+    # b = test.make_query('셔틀 버스가 언제 오는지 알려 주십시오.')
+    cos = cosine_similarity([1,2],[1,3])

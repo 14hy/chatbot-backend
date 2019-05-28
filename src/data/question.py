@@ -13,8 +13,9 @@ class QuestionMaker(object):
         self.model_wrapper = TensorServer()
         self.preprocessor = PreProcessor()
         vocab = self.preprocessor.vocab[:-1]
-        self.tfidf_vectorizer = TfidfVectorizer(smooth_idf=True, min_df=0,
-                                                stop_words=None, vocabulary=vocab)
+        self.tfidf_vectorizer = TfidfVectorizer(smooth_idf=True,
+                                                token_pattern=self.CONFIG['tfidf_token_pattern'], stop_words=None,
+                                                vocabulary=vocab)
         self.idf_, self.vocabulary_ = self.set_idf()
 
     def create_question(self, text, answer=None, category=None):
@@ -39,7 +40,8 @@ class QuestionMaker(object):
             raw_documents.append(text)
 
         self.tfidf_vectorizer.fit_transform(raw_documents=raw_documents)
-        idf_ = self.tfidf_vectorizer.idf_ / max(self.tfidf_vectorizer.idf_)  # 최대값으로 정규화
+        idf_ = self.tfidf_vectorizer.idf_
+        # idf_ /= max(self.tfidf_vectorizer.idf_)  # 최대값으로 정규화
         return idf_, self.tfidf_vectorizer.vocabulary_
 
     def insert_text(self, text, answer=None, category=None):
@@ -66,6 +68,9 @@ class QuestionMaker(object):
                 if backup:
                     _questions.insert(backup)
                 return
+
+    def check_idf(self, word):
+        return self.idf_[self.vocabulary_[word]]
 
 
 if __name__ == '__main__':

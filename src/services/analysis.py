@@ -1,8 +1,8 @@
-from collections import Counter
+from collections import Counter, OrderedDict
 
 import config
 import numpy as np
-from src.data.query import *
+from src.data.query import QueryMaker
 from src.data.preprocessor import PreProcessor
 from src.db.queries.index import get_list
 from src.db.queries import index as _queries
@@ -229,6 +229,24 @@ def visualize_sentiment():
     #  모두 스코어를 메긴 다음,
 
     #
+
+
+def get_FeatureSimilarity(text, n=10):
+    feature_top_distances = _query_maker.make_query(text, analysis=True)
+    if not feature_top_distances:
+        return None
+    output = {}
+
+    if n > len(feature_top_distances):
+        n = len(feature_top_distances)
+
+    for i in range(n):
+        matched_question_text = feature_top_distances[i][0].text
+        matched_question_distance = feature_top_distances[i][1]
+
+        output[i] = (matched_question_text, matched_question_distance)
+
+    return output
 
 
 if __name__ == '__main__':

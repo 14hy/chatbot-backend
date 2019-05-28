@@ -15,14 +15,16 @@ PREPROCESS = {
 }
 
 BERT = {  # 새로운 TENSOR SERVING 모델을 만들 때 사용
-    'model_path-search': os.path.join(BASE_DIR, 'predict/512_3_900000/model.ckpt-990000'),
-    'model_path-similarity': os.path.join(BASE_DIR, 'predict/512_3_900000/model.ckpt-990000'),
-    'bert_json': os.path.join(BASE_DIR, 'data/bert_config.json'),
+    'model_path-search': os.path.join(BASE_DIR, 'hdd2/FINAL_SQUAD/model.ckpt-12408'),
+    'model_path-similarity': os.path.join(BASE_DIR, 'hdd2/FINAL_PRETRAIN/model.ckpt-990000'),
+    'bert_json': os.path.join(BASE_DIR, 'squad_train_model/bert_config.json'),
     'similarity_layer': -1,
     # ELMO LIKE FEATURE VECTOR LAYERS 여러레이어를 더하거나, -2, -3... 하위 레이어 만을 사용 해보는 방법들 시도해보기
-    'version-similarity': 2,
+    'version-similarity': 5,
     # 1: 128 seq length 75000 step
     # 2: 512 seq length 990000 step
+    # 3: 2 + similarity layer -2
+    # 4: -12 layer(단어임베딩)
     'version-search': 2,
     # 1: F1 score 71
     # 2: F1 score 83.6 + train+dev -> (92)
@@ -31,13 +33,16 @@ BERT = {  # 새로운 TENSOR SERVING 모델을 만들 때 사용
     # 3: predict - 0.0~1.0 (중립추가 하기위해)
     'max_seq_length-search': 384,
     'max_seq_length-similarity': 25,
-    'MODEL_DIR': os.path.join(BASE_DIR, 'sentiment/tensor_serving_models')
+    'MODEL_DIR': os.path.join(BASE_DIR, 'hdd2/tensor_serving_models')
 }
 
 TENSOR_SERVING = {
     'url-search': 'http://10.140.0.8:8501/v1/models/search:predict',
     'url-similarity': 'http://10.140.0.8:8502/v1/models/similarity:predict',
-    'url-sentiment': 'http://10.140.0.8:8503/v1/models/sentiment:predict'
+    'url-sentiment': 'http://10.140.0.8:8503/v1/models/sentiment:predict',
+    'url-search-v': 'http://10.140.0.8:8501/v1/models/search',
+    'url-similarity-v': 'http://10.140.0.8:8502/v1/models/similarity',
+    'url-sentiment-v': 'http://10.140.0.8:8503/v1/models/sentiment'
 }
 
 HANDLER = {
@@ -45,7 +50,8 @@ HANDLER = {
 }
 
 QUESTION = {
-    'categories': ['shuttle_bus', 'food', 'talk', 'search', 'book', 'prepared', 'test']
+    'categories': ['shuttle_bus', 'food', 'talk', 'search', 'book', 'prepared', 'test'],
+    'tfidf_token_pattern': r'(?u)\b[가-힣]+\b'
 }
 
 SEARCH = {
@@ -65,13 +71,13 @@ ANALYSIS = {
 }
 
 QUERY = {
-    'distance': 'euclidean',
-    'jaccard_threshold': 0.55,
+    'distance': 'cosine',
+    'jaccard_threshold': 0.80,
     'search_threshold': 15,
     'idf_weight': 0.1,
+    'cosine_threshold': 0.9,
     # idf_weight: 건드리면 search threshold 도 조정 해줘야 하며
     # 높일 수록 더욱 더 비슷한 것들만 찾게 됨
-    'metric': ANALYSIS['metric']
 }
 
 MONGODB = {
