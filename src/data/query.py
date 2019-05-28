@@ -77,7 +77,7 @@ class QueryMaker(object):
             if not answer:  # 정답이 오지 않았다면 실패
                 return {'mode': 'unknown', 'answer': '무슨 말인지 모르겠다냥~ 다시 해달라냥'}
             return {'mode': 'search',
-                    'answer': answer,
+                    'answer': answer + '... 맞냥?',
                     'output': output}
 
     def make_query(self, chat, added_time=None, analysis=False):
@@ -123,7 +123,7 @@ class QueryMaker(object):
         # 우선 자카드 유사도 TOP 5를 찾음
         jaccard_top_distances = get_top(self.get_jaccard(chat), measure='jaccard')
 
-        if jaccard_top_distances:
+        if jaccard_top_distances and not analysis:
             measurement = '자카드 유사도'
             matched_question, jaccard_similarity = jaccard_top_distances[0][0], jaccard_top_distances[0][1]
             category = matched_question.category
