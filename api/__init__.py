@@ -14,6 +14,8 @@ from .v2.visualize.doughnut import api as ns_v2_visualize_doughnut
 from .v2.visualize.histogram import api as ns_v2_visualize_histogram
 from .v2.visualize.line import api as ns_v2_visualize_line
 from .v2.visualize.scatter import api as ns_v2_visualize_scatter
+from .v2.visualize.diagram import api as ns_v2_visualize_diagram
+from .v2.visualize.table import api as ns_v2_visualize_table
 from .v2.index import api as ns_v2
 import config
 
@@ -38,5 +40,7 @@ api.add_namespace(ns_v2_service_QA)
 api.add_namespace(ns_v2_visualize_bar)
 api.add_namespace(ns_v2_visualize_doughnut)
 api.add_namespace(ns_v2_visualize_histogram)
+api.add_namespace(ns_v2_visualize_table)
 api.add_namespace(ns_v2_visualize_line)
+api.add_namespace(ns_v2_visualize_diagram)
 api.add_namespace(ns_v2_visualize_scatter)

@@ -1,7 +1,7 @@
 from src.db.contexts.context import *
 from src.db.index import *
 
-_contexts = db[MONGODB_CONFIG['col_contexts']]
+collection = db[MONGODB_CONFIG['col_contexts']]
 
 
 def create_insert(text, subject):
@@ -10,15 +10,15 @@ def create_insert(text, subject):
 
 
 def insert(document):
-    return _contexts.update_one({'subject': document['subject']},
-                                {'$set': document}, upsert=True)
+    return collection.update_one({'subject': document['subject']},
+                                 {'$set': document}, upsert=True)
 
 
 def find_all():
-    contexts = _contexts.find({})
+    contexts = collection.find({})
     return contexts
 
 
 def find_by_subject(_subject):
-    document = _contexts.find_one({'subject': _subject})
+    document = collection.find_one({'subject': _subject})
     return document

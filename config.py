@@ -9,7 +9,7 @@ PREPROCESS = {
     'max_seq_length-search': 384,
     'max_query_length-search': 64,
     'max_query_length-similarity': 25,  # = seq_length
-    'keywords_tags': ['NNG', 'NNP', 'NNB', 'NNBC', 'MAG'],
+    'keywords_tags': ['NNG', 'NNP', 'NNB', 'NNBC', 'MAG', 'VV', 'VA', 'VCP', 'VCN', 'SL', 'SN'],
     'clean_tags': ['JK', 'JX', 'JC'],
     'sub_file': os.path.join(BASE_DIR, 'chatbot', 'sub.txt')
 }
@@ -72,12 +72,10 @@ ANALYSIS = {
 
 QUERY = {
     'distance': 'cosine',
-    'jaccard_threshold': 0.80,
+    'jaccard_threshold': 0.7,
     'search_threshold': 15,
     'idf_weight': 0.1,
-    'cosine_threshold': 0.9,
-    # idf_weight: 건드리면 search threshold 도 조정 해줘야 하며
-    # 높일 수록 더욱 더 비슷한 것들만 찾게 됨
+    'cosine_threshold': 0.87,
 }
 
 MONGODB = {

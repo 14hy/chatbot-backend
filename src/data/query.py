@@ -77,7 +77,7 @@ class QueryMaker(object):
             if not answer:  # 정답이 오지 않았다면 실패
                 return {'mode': 'unknown', 'answer': '무슨 말인지 모르겠다냥~ 다시 해달라냥'}
             return {'mode': 'search',
-                    'answer': answer + '... 맞냥?',
+                    'answer': answer,
                     'output': output}
 
     def make_query(self, chat, added_time=None, analysis=False):
@@ -93,6 +93,8 @@ class QueryMaker(object):
         added_time.astimezone(UTC)
 
         def get_top(distances, measure='jaccard'):
+            if not distances:
+                return None
             assert type(distances) is OrderedDict
             output = {}
 
@@ -192,10 +194,11 @@ class QueryMaker(object):
         assert chat is not None
 
         feature_vector = self.modelWrapper.similarity(chat)
-        # question_list = questions.find_by_keywords(keywords=keywords)
-        # if not question_list or analysis:  # 걸리는 키워드가 없는 경우 모두 다 비교 # search 로 넘어가는 것이, 성능적으로 좋을 듯
-        #     question_list = questions.find_all()
-        question_list = questions.find_all()
+        question_list = questions.find_by_keywords(keywords=keywords)
+        if not question_list:  # 걸리는 키워드가 없는 경우 모두 다 비교 # search 로 넘어가는 것이, 성능적으로 좋을 듯
+            # question_list = questions.find_all()
+            return None
+        # question_list = questions.find_all()
 
         distances = {}
         a_vector = self.get_weighted_average_vector(chat, feature_vector)
@@ -251,6 +254,3 @@ class QueryMaker(object):
 
 if __name__ == "__main__":
     test = QueryMaker()
-    # a = test.get_jaccard('셔틀 언제 와요?')
-    # b = test.make_query('셔틀 버스가 언제 오는지 알려 주십시오.')
-    cos = cosine_similarity([1,2],[1,3])

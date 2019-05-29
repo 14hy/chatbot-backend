@@ -1,7 +1,7 @@
 from src.db.index import *
 from src.db.questions.question import convert_to_question, convert_to_document
 
-_questions = db[MONGODB_CONFIG['col_questions']]
+collection = db[MONGODB_CONFIG['col_questions']]
 
 
 def insert(question):
@@ -15,22 +15,28 @@ def insert(question):
 
     document = convert_to_document(question)
 
-    return _questions.update_one(filter={'text': document['text']},
+    return collection.update_one(filter={'text': document['text']},
                                  update={'$set': document},
                                  upsert=True)  # update_one -> 중복 삽입을 막기 위해
 
 
 def find_all():
-    '''
-
-    :return: list of Question objects
-    '''
     questions = []
-    cursor = _questions.find({})
+    cursor = collection.find()
 
     for document in cursor:
         question = convert_to_question(document)
         questions.append(question)
+    # questions = list(cursor)
+
+    return questions
+
+
+def find(field={}):
+    questions = []
+    cursor = collection.find({}, field)
+
+    questions = list(cursor)
 
     return questions
 
@@ -41,7 +47,7 @@ def find_by_text(text):
     :param text:
     :return: Question object
     '''
-    document = _questions.find_one({'text': text})
+    document = collection.find_one({'text': text})
     if document:
         return convert_to_question(document)
     return None
@@ -55,7 +61,7 @@ def find_by_keywords(keywords):
     '''
     output = []
 
-    cursor = _questions.find({'keywords': {'$in': keywords}})
+    cursor = collection.find({'keywords': {'$in': keywords}})
 
     for document in cursor:
         question = convert_to_question(document)
@@ -71,7 +77,7 @@ def find_by_category(category):
     '''
 
     questions = []
-    cursor = _questions.find({'category': category})
+    cursor = collection.find({'category': category})
 
     for document in cursor:
         question = convert_to_question(document)
@@ -81,11 +87,11 @@ def find_by_category(category):
 
 
 def delete_by_text(text):
-    return _questions.delete_one({'text': text})
+    return collection.delete_one({'text': text})
 
 
 def remove_by_text():
     pass
 
 
-a = find_by_text('오늘 메뉴 뭐에요').feature_vector
+# a = find_by_text('오늘 메뉴 뭐에요').feature_vector

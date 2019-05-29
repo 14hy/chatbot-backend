@@ -4,8 +4,7 @@ import config
 import numpy as np
 from src.data.query import QueryMaker
 from src.data.preprocessor import PreProcessor
-from src.db.queries.index import get_list
-from src.db.queries import index as _queries
+from src.db.queries import index as _query
 from src.db.questions import index as _questions
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
@@ -95,15 +94,16 @@ def get_JaccardSimilarity(query):
 
 
 def get_MostCommonKeywords(n=7, mode=0):
+    field = {'keywords': 1}
     # 자주 나오는 키워드 Top
     if mode == 0:
-        target_list = _questions.find_all()
+        target_list = _questions.find(field)
     elif mode == 1:
-        target_list = get_list()
+        target_list = list(_query.collection.find({}, field))
 
     keywords = []
-    for query in target_list:
-        for keyword in query.keywords:
+    for target in target_list:
+        for keyword in target['keywords']:
             keywords.append(keyword)
     most_common = Counter(keywords).most_common(n)
 
@@ -116,7 +116,7 @@ def get_MostCommonKeywords(n=7, mode=0):
 
 
 def get_SearchToQuestion(n=20):
-    queries = _queries.find_by_category('search')[:n]
+    queries = _query.find_by_category('search')[:n]
 
     output = {}
     for query in queries:
@@ -145,7 +145,7 @@ def visualize_similarity(chat, mode=0):
     if mode == 0:
         target_list = _questions.find_all()
     if mode == 1:
-        target_list = _queries.find_all()
+        target_list = _query.find_all()
 
     X.append(chat_vector)
     X_text.append(chat)
@@ -196,26 +196,26 @@ def visualize_similarity(chat, mode=0):
 
 
 def visualize_category(mode=0):
+    field = {'category': 1}
     categories = []
 
     if mode == 0:  # Questions
-        questions = _questions.find_all()
+        questions = list(_questions.collection.find({}, field))
 
         for question in questions:
-            categories.append(question.category)
+            categories.append(question['category'])
     elif mode == 1:
-        queries = _queries.find_all()
+        queries = _query.collection.find({}, field)
 
         for query in queries:
-            categories.append(query.category)
+            categories.append(query['category'])
 
     counter = Counter(categories)
     return counter
 
 
 def visualize_sentiment():
-    #  모든 쿼리 불러오고
-    queries = _queries.find_all()
+    queries = _query.find_all()
 
     output = OrderedDict()
     for query in queries:
