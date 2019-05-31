@@ -39,15 +39,15 @@ class Context(Resource):
         parser.add_argument('text', type=str, required=False, default=None, help='수정된 문단')
         args = parser.parse_args(strict=True)
 
-        context = args['text']
+        text = args['text']
         subject = args['subject']
 
         target = _context.collection.find_one({'_id': _id})
 
         if subject:
             target['subject'] = subject
-        if context:
-            target['context'] = context
+        if text:
+            target['text'] = text
 
         return {'status': str(_context.collection.update_one({'_id': _id}, update=target))}
 
@@ -69,15 +69,15 @@ class Context(Resource):
         parser.add_argument('text', type=str, required=False, default=None, help='수정된 문단')
         args = parser.parse_args(strict=True)
 
-        context = args['text']
+        text = args['text']
         subject = args['subject']
 
         target = _context.collection.find_one({'subject': subject})
 
         if subject:
             target['subject'] = subject
-        if context:
-            target['context'] = context
+        if text:
+            target['text'] = text
 
         return {'status': str(_context.collection.update_one({'subject': subject}, update=target))}
 
