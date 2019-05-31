@@ -222,7 +222,7 @@ class PreProcessor(metaclass=Singleton):
         return text
 
     def clean(self, chat):
-        chat, removed = self.tokenizer.clen_chat(chat)
+        chat, removed = self.tokenizer.clean_chat(chat)
 
         return chat, removed
 
