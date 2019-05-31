@@ -56,10 +56,10 @@ class QA(Resource):
     @api.doc('주어진 질문과 문단 주제를 사용하여 QA', params={'text': '질문', 'subject': '문단주제'})
     def get(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('chat', required=True, type=str)
+        parser.add_argument('text', required=True, type=str)
         parser.add_argument('subject', required=True, type=str)
         args = parser.parse_args(strict=True)
-        answer, context = _search.response_with_subject(args['chat'], args['subject'])
+        answer, context = _search.response_with_subject(args['text'], args['subject'])
 
         return {'answer': answer,
                 'context': context}
