@@ -85,6 +85,8 @@ MONGODB = {
     'col_questions': 'questions',
     'col_queries': 'queries',
     'col_contexts': 'contexts',
+    'col_julimmal': 'julimmal',
+    'col_stopword': 'stopword',
     'username': "mhlee",
     'password': "mhlee"
 }
