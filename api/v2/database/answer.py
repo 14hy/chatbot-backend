@@ -5,6 +5,7 @@ import config
 from src.data.question import QuestionMaker
 from src.db.questions import index as _questions
 from .utils import *
+from bson import ObjectId
 
 _question_maker = QuestionMaker()
 CONFIG = config.QUESTION
@@ -22,7 +23,7 @@ class Questions(Resource):
 
     @api.doc('모든 답변들의 id, 질문')
     def get(self):
-        return id_to_str(list(_questions.collection.find({}, filter)))
+        return cursor_to_json(list(_questions.collection.find({}, filter)))
 
     @api.doc('답변 추가/ 수정', params={'text': '등록 할 답변의 질문', 'answer': '답변', 'category': str(CONFIG['categories'])})
     def post(self):
@@ -41,8 +42,7 @@ class Questions(Resource):
 
     @api.doc('텍스트가 포함 된 답변리스트')
     def get(self, text):
-        return id_to_str(
-            list(_questions.collection.find({'$text': {'$search': text}}, filter)))
+        return cursor_to_json(_questions.collection.find({'$text': {'$search': text}}, filter))
 
 
 @api.route('/<string:_id>')
@@ -50,7 +50,7 @@ class Questions(Resource):
 
     @api.doc('해당하는 아이디의 답변', params={'_id': 'String'})
     def get(self, _id):
-        return _questions.collection.find_one({'_id': _id})
+        return _questions.collection.find_one({'_id': ObjectId(_id)})
 
     @api.doc('답변의 질문텍스트, 답변, 카테고리 수정', params={'text': '질문', 'answer': '답변', 'category': '카테고리'})
     def patch(self, _id):
@@ -64,7 +64,7 @@ class Questions(Resource):
         answer = args['answer']
         category = args['category']
 
-        target = _questions.collection.find_one({'_id': _id})
+        target = _questions.collection.find_one({'_id': ObjectId(_id)})
         if text:
             target['text'] = text
         if answer:
@@ -72,11 +72,11 @@ class Questions(Resource):
         if category:
             target['category'] = category
 
-        return {'status': _questions.collection.update_one({'_id': _id}, update=target)}
+        return {'status': str(_questions.collection.update_one({'_id': ObjectId(_id)}, update={'$set': target}))}
 
     @api.doc('해당 아이디 답변 삭제')
     def delete(self, _id):
-        return {'status': '구현 중'}
+        return {'status': str(_questions.collection.delete_one({'_id': ObjectId(_id)}))}
 
 
 @api.route('/rebase')
