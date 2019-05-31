@@ -51,8 +51,7 @@ class PreProcessor(metaclass=Singleton):
 
         self.CONFIG = config.PREPROCESS
 
-        self.tokenizer = FullTokenizer(self.CONFIG['vocab_file'], use_morphs=self.CONFIG['use_morphs'],
-                                       stop_words_file=self.CONFIG['stop_words_file'], sub_file=self.CONFIG['sub_file'])
+        self.tokenizer = FullTokenizer(self.CONFIG['vocab_file'], use_morphs=self.CONFIG['use_morphs'])
         self.vocab = load_vocab_as_list(self.CONFIG['vocab_file'])
 
     def str_to_tokens(self, text):
@@ -223,7 +222,7 @@ class PreProcessor(metaclass=Singleton):
         return text
 
     def clean(self, chat):
-        chat, removed = self.tokenizer.clean_chat(chat)
+        chat, removed = self.tokenizer.clen_chat(chat)
 
         return chat, removed
 
