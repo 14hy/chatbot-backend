@@ -39,7 +39,7 @@ class Context(Resource):
         parser.add_argument('text', type=str, required=False, default=None, help='수정된 문단')
         args = parser.parse_args(strict=True)
 
-        context = args['context']
+        context = args['text']
         subject = args['subject']
 
         target = _context.collection.find_one({'_id': _id})
@@ -69,7 +69,7 @@ class Context(Resource):
         parser.add_argument('text', type=str, required=False, default=None, help='수정된 문단')
         args = parser.parse_args(strict=True)
 
-        context = args['context']
+        context = args['text']
         subject = args['subject']
 
         target = _context.collection.find_one({'subject': subject})
