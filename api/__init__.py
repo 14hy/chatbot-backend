@@ -3,6 +3,7 @@ from .v1.chatbot import v1 as ns_v1
 from .v2.database.answer import api as ns_v2_db_question
 from .v2.database.query import api as ns_v2_db_query
 from .v2.database.context import api as ns_v2_db_context
+from .v2.database.voca import api as ns_v2_db_voca
 from .v2.preprocess.clean import api as ns_v2_prep_clean
 from .v2.preprocess.keyword import api as ns_v2_prep_keyword
 from .v2.preprocess.tag import api as ns_v2_prep_tag
@@ -31,6 +32,7 @@ api.add_namespace(ns_v2)
 api.add_namespace(ns_v2_db_question)
 api.add_namespace(ns_v2_db_query)
 api.add_namespace(ns_v2_db_context)
+api.add_namespace(ns_v2_db_voca)
 api.add_namespace(ns_v2_prep_clean)
 api.add_namespace(ns_v2_prep_keyword)
 api.add_namespace(ns_v2_prep_tag)
