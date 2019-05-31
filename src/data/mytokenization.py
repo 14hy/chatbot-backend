@@ -5,6 +5,8 @@ from mecab import MeCab
 
 from src.data.tokenization import *
 from src.data.tokenization import _is_punctuation
+from src.db.voca import stopword as _stopword
+from src.db.voca import julimmal as _julimmal
 
 
 class FullTokenizer(FullTokenizer):
@@ -35,8 +37,8 @@ class FullTokenizer(FullTokenizer):
 
         chat, r = self.basic_tokenizer.clean_punctuations(chat)
         chat, r2 = self.basic_tokenizer.clean_stop_words(chat)
-        chat = self.basic_tokenizer.sub(chat)
-        removed.extend(r + r2)
+        chat, replaced = self.basic_tokenizer.sub(chat)
+        removed.extend(r + r2 + replaced)
 
         return chat, removed
 
@@ -176,10 +178,11 @@ class BasicTokenizer(BasicTokenizer):
             return None
         stop_words = []
 
-        with open(file, mode='r') as f:
-            for line in f:
-                convert_to_unicode(line)
-                stop_words.append(line.strip())
+        # with open(file, mode='r') as f:
+        #     for line in f:
+        #         convert_to_unicode(line)
+        #         stop_words.append(line.strip())
+        stop_words = list(map(lambda x: x['word'], _stopword.collection.find({}, {'word': 1, '_id': 0})))
 
         return stop_words
 
@@ -187,24 +190,34 @@ class BasicTokenizer(BasicTokenizer):
         if sub_file is None:
             return None
         sub_dic = {}
-        with open(sub_file, mode='r', encoding='utf-8') as f:
-            for line in f:
-                line = convert_to_unicode(line).strip()
-                line = line.split(',')
-                sub_dic[line[0]] = line[1]
+
+        # with open(sub_file, mode='r', encoding='utf-8') as f:
+        #     for line in f:
+        #         line = convert_to_unicode(line).strip()
+        #         line = line.split(',')
+        #         sub_dic[line[0]] = line[1]
+        def mapper(x):
+            sub_dic[x['orig']] = x['sub']
+
+        cursor = _julimmal.collection.find({})
+        for c in cursor:
+            sub_dic[c['orig']] = c['sub']
+
         return sub_dic
 
     def sub(self, text):
         text = text.split()
         output = []
+        replaced = []
 
         for t in text:
             if t in self.sub_dic.keys():
                 output.append(self.sub_dic[t])
+                replaced.append(t)
             else:
                 output.append(t)
 
-        return ' '.join(output)
+        return ' '.join(output), replaced
 
     def is_stop_words(self, text):
 
@@ -236,7 +249,7 @@ class BasicTokenizer(BasicTokenizer):
 
         for t in text:
             if self.is_stop_words(t):
-                pass
+                removed.append(t)
             else:
                 output.append(t)
 
