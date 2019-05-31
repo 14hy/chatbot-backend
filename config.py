@@ -4,14 +4,12 @@ BASE_DIR = '/home/rhodochrosited/'
 
 PREPROCESS = {
     'vocab_file': os.path.join(BASE_DIR, 'data/vocab-9171.txt'),
-    'stop_words_file': os.path.join(BASE_DIR, 'chatbot', 'stop_words.txt'),
     'use_morphs': True,
     'max_seq_length-search': 384,
     'max_query_length-search': 64,
     'max_query_length-similarity': 25,  # = seq_length
     'keywords_tags': ['NNG', 'NNP', 'NNB', 'NNBC', 'MAG', 'VV', 'VA', 'VCP', 'VCN', 'SL', 'SN'],
-    'clean_tags': ['JK', 'JX', 'JC'],
-    'sub_file': os.path.join(BASE_DIR, 'chatbot', 'sub.txt')
+    'clean_tags': ['JK', 'JX', 'JC']
 }
 
 BERT = {  # 새로운 TENSOR SERVING 모델을 만들 때 사용
