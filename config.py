@@ -62,7 +62,7 @@ ANALYSIS = {
     'perplexity': 30.0,  # 5~50 권장
     'learning_rate': 200.0,  # 10~1000
     'n_iter': 1000,  # 최소 250
-    'metric': 'euclidean',  # distance metric ( x_i <-> x_j )
+    'metric': 'cosine',  # distance metric ( x_i <-> x_j )
     'method': 'barnes_hut',  # 속도개선
     'n_components': 2,  # y 차원
     'categories': QUESTION['categories']

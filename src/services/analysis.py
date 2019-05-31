@@ -9,6 +9,7 @@ from src.db.questions import index as _questions
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 from src.model.serving import TensorServer
+from sklearn.metrics import pairwise_distances
 
 _tensor_server = TensorServer()
 _query_maker = QueryMaker()
@@ -133,7 +134,7 @@ def visualize_similarity(chat, mode=0):
                 perplexity=CONFIG['perplexity'],
                 learning_rate=CONFIG['learning_rate'],
                 n_iter=CONFIG['n_iter'],
-                metric=CONFIG['metric'],
+                metric="precomputed",
                 method=CONFIG['method'])
     X = []  # (n_samples, n_features)
     X_text = []
@@ -168,6 +169,8 @@ def visualize_similarity(chat, mode=0):
             X.append(question_vector)
             X_text.append(text)
             X_category.append(target.category)
+
+    X = pairwise_distances(X, X, metric=CONFIG['metric'], n_jobs=-1)
 
     Y = tsne.fit_transform(X=X)  # low-dimension vectors
     x = Y[:, 0]
@@ -225,10 +228,6 @@ def visualize_sentiment():
         output[query.chat] = sentiment_score[0]
     output = sorted(output.items(), key=lambda x: x[1], reverse=True)
     return output
-
-    #  모두 스코어를 메긴 다음,
-
-    #
 
 
 def get_FeatureSimilarity(text, n=10):
