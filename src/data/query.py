@@ -115,7 +115,7 @@ class QueryMaker(object):
 
             return output
 
-        feature_vector = self.modelWrapper.similarity(chat)
+        # feature_vector = self.modelWrapper.similarity(chat)
         jaccard_similarity = None
         top_feature_distance = None
         category = None
@@ -130,24 +130,24 @@ class QueryMaker(object):
             matched_question, jaccard_similarity = jaccard_top_distances[0][0], jaccard_top_distances[0][1]
             category = matched_question.category
 
-        else:  # 자카드 유사도가 없다면, 유클리드 또는 맨하탄 거리 비교로 넘어간다.
-            feature_top_distances = get_top(self.get_similarity(chat, keywords, analysis), measure='cosine')
-            if analysis:
-                return feature_top_distances
-            measurement = self.CONFIG['distance']
-            if feature_top_distances is None:
-                category = 'search'
-                matched_question = None
-                top_feature_distance = None
-            else:
-                matched_question = feature_top_distances[0][0]
-                top_feature_distance = feature_top_distances[0][1]
-                category = matched_question.category
+        # else:  # 자카드 유사도가 없다면, 유클리드 또는 맨하탄 거리 비교로 넘어간다.
+        #     feature_top_distances = get_top(self.get_similarity(chat, keywords, analysis), measure='cosine')
+        #     if analysis:
+        #         return feature_top_distances
+        #     measurement = self.CONFIG['distance']
+        #     if feature_top_distances is None:
+        #         category = 'search'
+        #         matched_question = None
+        #         top_feature_distance = None
+        #     else:
+        #         matched_question = feature_top_distances[0][0]
+        #         top_feature_distance = feature_top_distances[0][1]
+        #         category = matched_question.category
 
         answer = self.by_category(chat, category, matched_question)
 
         query = Query(chat=chat,
-                      feature_vector=feature_vector,
+                      feature_vector=None,
                       keywords=keywords,
                       matched_question=matched_question,
                       manhattan_similarity=top_feature_distance,

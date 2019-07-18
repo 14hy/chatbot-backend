@@ -29,11 +29,9 @@ class Engine(metaclass=Singleton):
         :param chat: str
         :return: str
         '''
-        tic = time()
 
         # TODO Query Feature extractor.
         answer = self._chat_handler.handle(chat)
-        toc = time()
         # pprint(answer)
 
         return answer

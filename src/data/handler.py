@@ -25,7 +25,6 @@ class Handler(metaclass=Singleton):
                 'sentiment': sentiment}
 
     def handle(self, chat, added_time=None):
-        chat, _ = self.preprocessor.clean(chat)
         query = self.query_maker.make_query(chat=chat, added_time=added_time)
         if query.manhattan_similarity:
             distance = query.manhattan_similarity
@@ -33,11 +32,11 @@ class Handler(metaclass=Singleton):
             distance = query.jaccard_similarity
         queries.insert(query)
 
-        sentiment_score = self._model_wrapper.sentiment(chat=chat)[0]
+        # sentiment_score = self._model_wrapper.sentiment(chat=chat)[0]
 
         return self.get_response(answer=query.answer,
                                  morphs=query.morphs,
                                  distance=distance,
                                  measurement=query.measurement,
                                  text=query.matched_question,
-                                 sentiment=sentiment_score)
+                                 sentiment=None)
