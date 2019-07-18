@@ -91,11 +91,11 @@ MONGODB = {
 
 FLASK = {
     'host': '0.0.0.0',
-    'port': 6006,
+    'port': 8000,
     'desc': None,
     'version': '0.3',
     'title': 'Willson-Hanyang_Chatbot',
-    'debug': True
+    'debug': False
 }
 
 if __name__ == '__main__':

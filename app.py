@@ -10,4 +10,5 @@ if __name__ == '__main__':
     CORS(app)
 
     api.init_app(app=app)
-    app.run(host=CONFIG['host'], port=CONFIG['port'], debug=CONFIG['debug'])
+    context = ('/etc/nginx/certificate.crt', '/etc/nginx/private.key')
+    app.run(host=CONFIG['host'], port=CONFIG['port'], debug=CONFIG['debug'], ssl_context=context)
