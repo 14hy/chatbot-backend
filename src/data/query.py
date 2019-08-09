@@ -121,6 +121,7 @@ class QueryMaker(object):
         category = None
         keywords = self.preprocessor.get_keywords(chat)
         morphs = self.preprocessor.get_morphs(chat)
+        matched_question = None
 
         # 우선 자카드 유사도 TOP 5를 찾음
         jaccard_top_distances = get_top(self.get_jaccard(chat), measure='jaccard')
